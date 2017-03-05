@@ -23,6 +23,6 @@ DBNAME="fakenews"
 DBUSER="postgres"
 DBPASS="PASSWORD"
 ```
-Hopefully everything is fairly self-explanatory. The given DBUSER seen above is the default PSQL admin superuser. Likely we will either be logging in as this user, or we will be creating users for each one of us (this might be the better option, as it PSQL might be able to determine who editted the database last and would also allow more than 1 person to be logged in at once). Obviously you would replace the DBPASS field with the password associated with logging into PSQL as the given DBUSER.
+Hopefully everything is fairly self-explanatory. The given DBUSER seen above is the default PSQL admin superuser. Likely we will either be logging in as this user or we will be creating users for each one of us. Obviously you would replace the DBPASS field with the password associated with logging into PSQL as the given DBUSER.
 
-Note that in the furture, the .env file also contain a DBPORT key if we need it in order to connect to server database.
+Note that in the furture, the .env file may also contain a DBPORT key if we need it in order to connect to server database.
