@@ -2,7 +2,6 @@
 
 ### Requirements
  - [Python 3](https://www.python.org/downloads/)
- - 
  
 ### Recommendations
  - [Virtualenv](https://virtualenv.pypa.io/en/stable/installation/)
