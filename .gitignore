@@ -1,3 +1,4 @@
 /pyenv/*
 /Utils/_pycache_/*
 *.pyc
+.env
