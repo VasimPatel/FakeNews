@@ -1,7 +1,7 @@
 # @Author: DivineEnder <DivineHP>
 # @Date:   2017-03-04 23:27:36
 # @Last modified by:   DivinePC
-# @Last modified time: 2017-03-06 19:14:20
+# @Last modified time: 2017-03-06 20:07:52
 
 import Utils.settings as settings
 settings.init()
@@ -46,12 +46,24 @@ def setup_linking_tables(conn, cur):
 		source_id integer NOT NULL PRIMARY KEY REFERENCES sources ON DELETE CASCADE,
 		author_id integer NOT NULL REFERENCES authors ON DELETE CASCADE
 	)""")
+	cur.execute("""CREATE TABLE article_tags (
+		article_id integer NOT NULL PRIMARY KEY REFERENCES articles ON DELETE CASCADE,
+		tag_id integer NOT NULL REFERENCES tags ON DELETE CASCADE
+	)""")
+
+@db_utils.commits_connection
+def setup_tags(conn, cur):
+	cur.execute("""CREATE TABLE tags (
+		tag_id serial UNIQUE PRIMARY KEY,
+		tag_name varchar(255) UNIQUE
+	)""")
 
 @db_utils.new_connection(host = os.environ.get("DBHOST"), dbname = os.environ.get("DBNAME"), user = os.environ.get("DBUSER"), password = os.environ.get("DBPASS"))
 def main(conn, cur):
 	setup_sources(conn, cur)
 	setup_articles(conn, cur)
 	setup_authors(conn, cur)
+	setup_tags(conn, cur)
 	setup_linking_tables(conn, cur)
 
 if __name__ == "__main__":

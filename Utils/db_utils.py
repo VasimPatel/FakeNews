@@ -1,7 +1,7 @@
 # @Author: DivineEnder <DivineHP>
 # @Date:   2017-03-04 23:42:57
 # @Last modified by:   DivinePC
-# @Last modified time: 2017-03-06 19:13:45
+# @Last modified time: 2017-03-06 20:42:58
 
 import psycopg2
 import functools
@@ -25,10 +25,15 @@ def new_connection(host, dbname, user, password):
 
 			cursor = connection.cursor()
 
-			resp = func(connection, cursor, *args, **kwargs)
+			try:
+				resp = func(connection, cursor, *args, **kwargs)
 
-			connection.commit()
-			print("Commited changes for this connection.")
+				connection.commit()
+				print("Commited changes for this connection.")
+			except Exception as e:
+				print("Something bad happened while the function was evaluating.")
+				print("Changes made WILL NOT BE committed.")
+				print(e)
 
 			cursor.close()
 			connection.close()
