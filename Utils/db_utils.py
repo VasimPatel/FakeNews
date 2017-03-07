@@ -1,7 +1,7 @@
 # @Author: DivineEnder <DivineHP>
 # @Date:   2017-03-04 23:42:57
 # @Last modified by:   DivinePC
-# @Last modified time: 2017-03-06 20:42:58
+# @Last modified time: 2017-03-06 21:02:00
 
 import psycopg2
 import functools
@@ -47,9 +47,14 @@ def new_connection(host, dbname, user, password):
 def commits_connection(func):
 	@functools.wraps(func)
 	def wrapper(connection, cursor, *args, **kwargs):
-		resp = func(connection, cursor, *args, **kwargs)
+		try:
+			resp = func(connection, cursor, *args, **kwargs)
 
-		connection.commit()
+			connection.commit()
+		except Exception as e:
+			print("An execption occured while trying to evaluate a function which was supposed to commit.")
+			print("Changes made WILL NOT BE committed.")
+			print(e)
 
 		return resp
 	return wrapper
