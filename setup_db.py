@@ -1,13 +1,10 @@
 # @Author: DivineEnder <DivineHP>
 # @Date:   2017-03-04 23:27:36
-# @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-05 01:06:30
+# @Last modified by:   DivinePC
+# @Last modified time: 2017-03-06 19:14:20
 
-# Load the environment file
-# This load makes sure passwords are not stored on github
-# Basically here for security reasons
-from dotenv import load_dotenv, find_dotenv
-load_dotenv(find_dotenv())
+import Utils.settings as settings
+settings.init()
 
 # Import required modules
 import os

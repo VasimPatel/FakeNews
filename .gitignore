@@ -2,3 +2,4 @@
 /Utils/_pycache_/*
 *.pyc
 .env
+.bat

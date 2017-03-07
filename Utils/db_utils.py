@@ -1,7 +1,7 @@
 # @Author: DivineEnder <DivineHP>
 # @Date:   2017-03-04 23:42:57
-# @Last modified by:   DivineHP
-# @Last modified time: 2017-03-04 23:45:48
+# @Last modified by:   DivinePC
+# @Last modified time: 2017-03-06 19:13:45
 
 import psycopg2
 import functools
@@ -15,17 +15,20 @@ def new_connection(host, dbname, user, password):
 		def wrapper(*args, **kwargs):
 			try:
 				connection = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (dbname, user, host, password))
-				print("Connection opened to [dbname:%s]\n" % dbname)
+				print("\nConnection opened to [dbname:%s] on [host:%s]" % (dbname, host))
+				print("Logged in as [user:%s]\n" % user)
 			except Exception as e:
-				print("Fail. Unable to connect to DB.")
-				raise e
+				print("\nFailed to connect to the database.")
+				print("Tried to connect to [dbname:%s] on [host:%s] as [user:%s]" % (dbname, host, user))
+				print("Make sure you have a .env file that that the DBNAME, DBUSER, DBHOST, and DBPASS keys are all correct.")
+				return
 
 			cursor = connection.cursor()
 
 			resp = func(connection, cursor, *args, **kwargs)
 
 			connection.commit()
-			print("Commited connection.")
+			print("Commited changes for this connection.")
 
 			cursor.close()
 			connection.close()
