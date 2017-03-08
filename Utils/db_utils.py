@@ -1,7 +1,7 @@
 # @Author: DivineEnder <DivineHP>
 # @Date:   2017-03-04 23:42:57
-# @Last modified by:   DivinePC
-# @Last modified time: 2017-03-08 12:47:19
+# @Last modified by:   DivineHP
+# @Last modified time: 2017-03-08 15:15:35
 
 import psycopg2
 import functools
@@ -51,12 +51,12 @@ def commits_connection(func):
 			resp = func(connection, cursor, *args, **kwargs)
 
 			connection.commit()
+
+			return resp
 		except Exception as e:
 			print("An execption occured while trying to evaluate a function which was supposed to commit.")
 			print("Changes made WILL NOT BE committed.")
 			print(e)
-
-		return resp
 	return wrapper
 # -----------------------
 # | CONNECTION WRAPPERS |
