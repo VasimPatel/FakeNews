@@ -1,7 +1,7 @@
 # @Author: DivineEnder <DivineHP>
 # @Date:   2017-03-04 23:42:57
 # @Last modified by:   DivineHP
-# @Last modified time: 2017-03-08 15:15:35
+# @Last modified time: 2017-03-09 23:34:35
 
 import psycopg2
 import functools
@@ -30,16 +30,23 @@ def new_connection(host, dbname, user, password):
 
 				connection.commit()
 				print("Commited changes for this connection.")
+
+				cursor.close()
+				connection.close()
+				print("Closed connection.\n")
+
+				return resp
 			except Exception as e:
 				print("Something bad happened while the function was evaluating.")
 				print("Changes made WILL NOT BE committed.")
-				print(e)
+				print("\nError message was:")
+				print(str(e) + "\n")
 
-			cursor.close()
-			connection.close()
-			print("Closed connection.\n")
+				cursor.close()
+				connection.close()
+				print("Closed connection.\n")
 
-			return resp
+				raise e
 
 		return wrapper
 	return uses_db_dec
@@ -57,7 +64,30 @@ def commits_connection(func):
 			print("An execption occured while trying to evaluate a function which was supposed to commit.")
 			print("Changes made WILL NOT BE committed.")
 			print(e)
+
+			cursor.close()
+			connection.close()
+			print("Closed connection.\n")
+
+			raise e
+
 	return wrapper
+
+# TODO: Uses connection
+# Add a uses connection wrapper that uses only a single connection for everything
+# Could be done by accessing parent function variables (stored connection variable in parent and then just access it through function)
+# def set_open_connection(conn, cur):
+# 	def set_open_connection_dec(func):
+# 		@functools.wraps(func)
+# 		def wrapper(*args, **kwargs):
+#
+#
+# 		return wrapper
+# 	return set_open_connection_dec
+#
+# def uses_open_connection(func):
+# 	@functools.wrap(func)
+# 	def wrapper(connction, cursor, *args, **kwargs)
 # -----------------------
 # | CONNECTION WRAPPERS |
 # -----------------------

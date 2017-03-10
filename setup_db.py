@@ -1,7 +1,7 @@
 # @Author: DivineEnder <DivineHP>
 # @Date:   2017-03-04 23:27:36
-# @Last modified by:   DivinePC
-# @Last modified time: 2017-03-06 20:07:52
+# @Last modified by:   DivineHP
+# @Last modified time: 2017-03-10 01:13:39
 
 import Utils.settings as settings
 settings.init()
@@ -39,7 +39,7 @@ def setup_authors(conn, cur):
 @db_utils.commits_connection
 def setup_linking_tables(conn, cur):
 	cur.execute("""CREATE TABLE article_authors (
-		atricle_id integer NOT NULL PRIMARY KEY REFERENCES articles ON DELETE CASCADE,
+		article_id integer NOT NULL PRIMARY KEY REFERENCES articles ON DELETE CASCADE,
 		author_id integer NOT NULL REFERENCES authors ON DELETE CASCADE
 	)""")
 	cur.execute("""CREATE TABLE source_authors (
