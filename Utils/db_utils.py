@@ -1,15 +1,28 @@
 # @Author: DivineEnder <DivineHP>
 # @Date:   2017-03-04 23:42:57
 # @Last modified by:   DivineHP
-# @Last modified time: 2017-03-09 23:34:35
+# @Last modified time: 2017-03-10 17:46:41
 
 import psycopg2
+import Utils.settings as settings
 import functools
 
 # -----------------------
 # | CONNECTION WRAPPERS |
 # -----------------------
-def new_connection(host, dbname, user, password):
+# Checks to see whether the global connection is set before the function is run
+def checks_glc(func):
+	@functools.wraps(func)
+	def wrapper(*args, **kwargs):
+		if settings.conn == None or settings.cur == None:
+			print("ERROR: Could not use global connection and/or cursor. Was not properly initalized.")
+			raise EnvironmentError
+
+		return func(*args, **kwargs)
+	return wrapper
+
+# Creates a new connection that it then passes to the global connection object (glc) or the connection and cursor objects (if not global)
+def new_connection(host, dbname, user, password, global_conn = False):
 	def uses_db_dec(func):
 		@functools.wraps(func)
 		def wrapper(*args, **kwargs):
@@ -23,17 +36,27 @@ def new_connection(host, dbname, user, password):
 				print("Make sure you have a .env file that that the DBNAME, DBUSER, DBHOST, and DBPASS keys are all correct.")
 				return
 
-			cursor = connection.cursor()
+			# Gets a cursor with dictionary capabilities
+			cursor = connection.cursor(cursor_factory = psycopg2.extras.DictCursor)
 
 			try:
-				resp = func(connection, cursor, *args, **kwargs)
+				# Set the connection to global so that it can be accessed from the settings file
+				if global_conn:
+					print("This connection is now a global connection.")
+					settings.set_global_connection(connection, cursor)
+					resp = func(settings, *args, **kwargs)
+				else:
+					resp = func(connection, cursor, *args, **kwargs)
 
 				connection.commit()
 				print("Commited changes for this connection.")
 
-				cursor.close()
-				connection.close()
-				print("Closed connection.\n")
+				if global_conn:
+					settings.close_global_connection
+				else:
+					cursor.close()
+					connection.close()
+					print("Closed connection.\n")
 
 				return resp
 			except Exception as e:
@@ -42,15 +65,19 @@ def new_connection(host, dbname, user, password):
 				print("\nError message was:")
 				print(str(e) + "\n")
 
-				cursor.close()
-				connection.close()
-				print("Closed connection.\n")
+				if global_conn:
+					settings.close_global_connection
+				else:
+					cursor.close()
+					connection.close()
+					print("Closed connection.\n")
 
 				raise e
 
 		return wrapper
 	return uses_db_dec
 
+# Commits the passed in connection
 def commits_connection(func):
 	@functools.wraps(func)
 	def wrapper(connection, cursor, *args, **kwargs):
@@ -65,32 +92,80 @@ def commits_connection(func):
 			print("Changes made WILL NOT BE committed.")
 			print(e)
 
-			cursor.close()
-			connection.close()
-			print("Closed connection.\n")
+			raise e
+
+	return wrapper
+
+# Passes the glc to the given function
+@checks_glc
+def uses_glc(func):
+	@functools.wraps(func)
+	def wrapper(*args, **kwargs):
+		return func(settings, *args, **kwargs)
+	return wrapper
+
+# Passes the glc to the given function and commits it
+@checks_glc
+def commits_glc(func):
+	@functools.wraps(func)
+	def wrapper(*args, **kwargs):
+		try:
+			resp = func(settings, *args, **kwargs)
+
+			settings.conn.commit()
+
+			return resp
+		except Exception as e:
+			print("An execption occured while trying to evaluate a function which was supposed to commit the glc (glocal connection).")
+			print("Changes made WILL NOT BE committed.")
 
 			raise e
 
 	return wrapper
 
-# TODO: Uses connection
-# Add a uses connection wrapper that uses only a single connection for everything
-# Could be done by accessing parent function variables (stored connection variable in parent and then just access it through function)
-# def set_open_connection(conn, cur):
-# 	def set_open_connection_dec(func):
-# 		@functools.wraps(func)
-# 		def wrapper(*args, **kwargs):
-#
-#
-# 		return wrapper
-# 	return set_open_connection_dec
-#
-# def uses_open_connection(func):
-# 	@functools.wrap(func)
-# 	def wrapper(connction, cursor, *args, **kwargs)
+# Executes the returned string and tuple of the function through the glc
+@checks_glc
+@commits_glc
+def glc_database_command(func):
+	@functools.wraps(func)
+	def wrapper(*args, **kwargs):
+		resp = func(settings, *args, **kwargs)
+
+		command_string = resp[0]
+		command_variables = resp[1]
+		if query_variables is None:
+			settings.cur.execute(command_string)
+		else:
+			settings.cur.execute(settings.cur.mogrify(command_string, command_variables))
+	return wrapper
+
+# Query an return results from database
+@checks_glc
+def glc_database_query(func):
+	@functools.wraps(func)
+	def wrapper(*args, **kwargs):
+		resp = func(settings, *args, **kwargs)
+
+		query_string = resp[0]
+		query_variables = resp[1]
+		if query_variables is None:
+			settings.cur.execute(query_string)
+		else:
+			settings.cur.execute(settings.cur.mogrify(query_string, query_variables))
+
+		result = settings.cur.fetchall()
+
+		return result if result else [None]
+	return wrapper
+
 # -----------------------
 # | CONNECTION WRAPPERS |
 # -----------------------
+
+@commits_glc
+def close_all_db_connections(dbname = None):
+	target_db = dbname if dbname else os.environ.get("DBNAME")
+	cur.execute(cur.mogrify("""SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = %s AND pid <> pg_backend_pid();""", (target_db,)))
 
 # --------------------
 # | GENERIC DB UTILS |
