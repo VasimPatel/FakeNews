@@ -2,7 +2,7 @@
 # @Date:   2017-03-10 17:49:29
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-20 19:41:57
+# @Last modified time: 2017-03-20 20:23:38
 
 import os
 import psycopg2
@@ -134,6 +134,27 @@ def defaults_connection_and_cursor_to_primary(func):
 		return func(*args, connection = connection, cursor = cursor, **kwargs)
 	return wrapper
 
+# Query an return results from database
+def execute_as_database_query(func):
+	@wraps(func)
+	def wrapper(*args, cursor = None, **kwargs):
+		if cursor is None:
+			cursor = settings.primary_cursor
+
+		resp = func(*args, **kwargs)
+
+		query_string = resp[0]
+		query_variables = resp[1]
+		if query_variables is None:
+			cursor.execute(query_string)
+		else:
+			cursor.execute(cursor.mogrify(query_string, query_variables))
+
+		result = cursor.fetchall()
+
+		return result if result else None
+	return wrapper
+
 # Executes the returned string and tuple of the function through the glc
 def execute_as_database_command(func):
 	@wraps(func)
@@ -155,25 +176,21 @@ def execute_as_database_command(func):
 		connection.commit()
 	return wrapper
 
-# Query an return results from database
-def execute_as_database_query(func):
+def execute_as_database_values_command(func):
 	@wraps(func)
-	def wrapper(*args, cursor = None, **kwargs):
+	def wrapper(*args, connection = None, cursor = None, **kwargs):
+		if connection is None:
+			connection = settings.primary_connection
 		if cursor is None:
 			cursor = settings.primary_cursor
 
 		resp = func(*args, **kwargs)
 
-		query_string = resp[0]
-		query_variables = resp[1]
-		if query_variables is None:
-			cursor.execute(query_string)
-		else:
-			cursor.execute(cursor.mogrify(query_string, query_variables))
+		command_string = resp[0]
+		command_variables = resp[1]
+		cursor.execute(command_string, command_variables)
 
-		result = cursor.fetchall()
-
-		return result if result else [None]
+		connection.commit()
 	return wrapper
 
 # -----------------------
@@ -247,4 +264,8 @@ def execute_db_query(query_string, query_variables = None):
 # Execute a database command with the given tuple of variables (the query string should be formatted with % formats for each variable)
 @execute_as_database_command
 def execute_db_command(command_string, command_variables = None):
+	return (command_string, command_variables)
+
+@execute_as_database_values_command
+def execute_db_values_command(command_string, command_variables):
 	return (command_string, command_variables)

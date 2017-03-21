@@ -1,8 +1,8 @@
 # @Author: DivineEnder <DivineHP>
 # @Date:   2017-03-08 14:07:12
 # @Email:  danuta@u.rochester.edu
-# @Last modified by:   DivineHP
-# @Last modified time: 2017-03-10 16:13:20
+# @Last modified by:   DivineEnder
+# @Last modified time: 2017-03-20 20:09:49
 
 import Utils.settings as settings
 settings.init()
@@ -18,14 +18,13 @@ import Utils.get_fakenews_db as db
 # 		return func(func, *args, **kwargs)
 # 	return wrapper
 
-@db_utils.new_connection(host = os.environ.get("DBHOST"), dbname = os.environ.get("DBNAME"), user = os.environ.get("DBUSER"), password = os.environ.get("DBPASS"), global_conn = True)
-def main(glc):
+@db_utils.new_connection(primary = True, pass_to_function = False)
+def main():
 	print("You have properly connected to the database!")
 	print("Whoohooo!")
 
 	print("\nYou should now see a list of tables in the database...")
-	glc.cur.execute("select relname from pg_class where relkind='r' and relname !~ '^(pg_|sql_)';")
-	print(glc.cur.fetchall())
+	db_utils.list_all_db_tables()
 	db.get_tags_named(["Elections", "Elections 2016"])
 
 	print("\nEverything if everything seemed to print correctly you should be connected.")

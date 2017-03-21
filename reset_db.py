@@ -2,7 +2,7 @@
 # @Date:   2017-03-20 15:05:04
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-20 19:37:11
+# @Last modified time: 2017-03-20 20:09:58
 
 import Utils.settings as settings
 settings.init()
@@ -22,10 +22,3 @@ def main(conn, cursor):
 
 if __name__ == "__main__":
 	main()
-	# glc.open_connection(store_connection = True)
-	# glc.open_connection(store_connection = True)
-	# try:
-	# 	main()
-	# except Exception as e:
-	# 	glc.close_connection()
-	# 	raise(e)
