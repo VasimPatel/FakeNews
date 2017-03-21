@@ -1,7 +1,7 @@
 # @Author: DivineEnder <DivineHP>
 # @Date:   2017-03-04 23:42:57
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-20 19:36:50
+# @Last modified time: 2017-03-20 21:17:30
 
 import os
 import psycopg2
@@ -17,7 +17,7 @@ def list_all_db_tables(cursor = None):
 	print(glc.execute_db_query("select relname from pg_class where relkind='r' and relname !~ '^(pg_|sql_)';", cursor = cursor))
 
 def close_all_db_connections(dbname = os.environ.get("DBNAME"), connection = None, cursor = None):
-	glc.execute_database_command("""SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = %s AND pid <> pg_backend_pid();""", (dbname,), connection = connection, cursor = cursor)
+	glc.execute_db_command("""SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = %s AND pid <> pg_backend_pid();""", (dbname,), connection = connection, cursor = cursor)
 
 def add_table_to_db(table_name, *cols, connection = None, cursor = None, VERBOSE = True):
 	cols_string = ""

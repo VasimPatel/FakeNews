@@ -2,7 +2,7 @@
 # @Date:   2017-03-10 17:49:29
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-20 20:23:38
+# @Last modified time: 2017-03-20 21:18:21
 
 import os
 import psycopg2
@@ -171,7 +171,7 @@ def execute_as_database_command(func):
 		if command_variables is None:
 			cursor.execute(command_string)
 		else:
-			cursor.execute(settings.cur.mogrify(command_string, command_variables))
+			cursor.execute(cursor.mogrify(command_string, command_variables))
 
 		connection.commit()
 	return wrapper
