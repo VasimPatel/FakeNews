@@ -2,7 +2,7 @@
 # @Date:   2017-03-10 17:49:29
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-20 21:18:21
+# @Last modified time: 2017-03-20 21:41:08
 
 import os
 import psycopg2
@@ -152,7 +152,8 @@ def execute_as_database_query(func):
 
 		result = cursor.fetchall()
 
-		return result if result else None
+		# Standardizes the return so that it always returns a list
+		return result if result else [None]
 	return wrapper
 
 # Executes the returned string and tuple of the function through the glc
