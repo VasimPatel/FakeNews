@@ -2,7 +2,7 @@
 # @Date:   2017-03-08 13:49:12
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-22 00:25:00
+# @Last modified time: 2017-03-22 01:03:47
 
 import Utils.settings as settings
 settings.init()
@@ -15,7 +15,6 @@ import Utils.get_fakenews_db as db
 
 import json
 import datetime
-from unidecode import unidecode
 
 # Read the data from the json file
 def read_json_data(filename):
@@ -79,8 +78,8 @@ def add_source_data_to_db(source_data, source_name):
 
 @glc.new_connection(primary = True, pass_to_function = False)
 def main():
-	add_source_data_to_db(read_json_data("politico_data.json"), "Politico")
-	add_source_data_to_db(read_json_data("bb_data.json"), "BreitBart")
+	add_source_data_to_db(read_json_data("data/politico_data.json"), "Politico")
+	add_source_data_to_db(read_json_data("data/bb_data.json"), "BreitBart")
 
 if __name__ == "__main__":
 	main()
