@@ -2,7 +2,7 @@
 # @Date:   2017-03-08 13:49:12
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-22 01:03:47
+# @Last modified time: 2017-03-22 15:04:58
 
 import Utils.settings as settings
 settings.init()
@@ -15,6 +15,7 @@ import Utils.get_fakenews_db as db
 
 import json
 import datetime
+import dateutil.parser as parser
 
 # Read the data from the json file
 def read_json_data(filename):
@@ -45,7 +46,7 @@ def add_json_article_to_db(article, source_name):
 	# TODO: Fix datetime stripping so that time zones are accounted for
 	edit.add_article(article["title"],
 		article["url"],
-		datetime.datetime.strptime(article["date"][:-4], "%m/%d/%y %I:%M %p"),
+		parser.parse(article["date"]),
 		article["content"],
 		db.get_source_named(source_name)['source_id'],
 		author_ids,
@@ -79,7 +80,7 @@ def add_source_data_to_db(source_data, source_name):
 @glc.new_connection(primary = True, pass_to_function = False)
 def main():
 	add_source_data_to_db(read_json_data("data/politico_data.json"), "Politico")
-	add_source_data_to_db(read_json_data("data/bb_data.json"), "BreitBart")
+	# add_source_data_to_db(read_json_data("data/bb_data.json"), "BreitBart")
 
 if __name__ == "__main__":
 	main()
