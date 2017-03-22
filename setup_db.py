@@ -1,7 +1,7 @@
 # @Author: DivineEnder <DivineHP>
 # @Date:   2017-03-04 23:27:36
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-20 21:11:31
+# @Last modified time: 2017-03-22 10:00:34
 
 import Utils.settings as settings
 settings.init()
@@ -70,6 +70,9 @@ def setup_indexes():
 	glc.execute_db_command("""CREATE INDEX s_au_author_skey ON source_authors (author_id)""")
 	glc.execute_db_command("""CREATE INDEX ar_t_article_skey ON article_tags (article_id)""")
 	glc.execute_db_command("""CREATE INDEX ar_t_tag_skey ON article_tags (tag_id)""")
+	glc.execute_db_command("""CREATE UNIQUE INDEX ar_au_unique_skey ON article_authors (article_id, author_id)""")
+	glc.execute_db_command("""CREATE UNIQUE INDEX s_au_unique_skey ON source_authors (source_id, author_id)""")
+	glc.execute_db_command("""CREATE UNIQUE INDEX ar_t_unique_skey ON article_tags (article_id, tag_id)""")
 
 @glc.new_connection(primary = True, pass_to_function = False)
 def main():
