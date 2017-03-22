@@ -5,3 +5,4 @@ psycopg2==2.7
 pyparsing==2.1.10
 python-dotenv==0.6.3
 six==1.10.0
+Unidecode==0.4.20
