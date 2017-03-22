@@ -2,7 +2,7 @@
 # @Date:   2017-03-08 13:49:12
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-22 15:04:58
+# @Last modified time: 2017-03-22 18:23:42
 
 import Utils.settings as settings
 settings.init()
@@ -32,6 +32,7 @@ def add_json_article_to_db(article, source_name):
 			tag_ids.append(edit.add_tag(tag))
 		else:
 			tag_ids.append(db_tag['tag_id'])
+	tag_ids = list(set(tag_ids))
 
 	author_ids = []
 	for author in article["author"].split("|"):
