@@ -2,7 +2,7 @@
 # @Date:   2017-03-08 12:27:35
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-20 21:45:08
+# @Last modified time: 2017-03-22 17:45:29
 
 # from Utils.db_utils import commits_connection as cc
 # from Utils.db_utils import uses_connection as uc
@@ -103,6 +103,21 @@ def get_tag_named(tag_name, cursor = None):
 # ---------
 def get_article_authors(article_id, cursor = None):
 	return glc.execute_db_query("""SELECT author_id FROM article_authors WHERE article_id = %s""", (article_id,), cursor = cursor)
+
+def get_author_articles(author_id, cursor = None):
+	return glc.execute_db_query("""SELECT article_id FROM article_authors WHERE author_id = %s""", (author_id,), cursor = cursor)
+
+def get_source_authors(source_id, cursor = None):
+	return glc.execute_db_query("""SELECT author_id FROM source_authors WHERE source_id = %s""", (source_id,), cursor = cursor)
+
+def get_author_sources(author_id, cursor = None):
+	return glc.execute_db_query("""SELECT source_id FROM source_authors WHERE author_id = %s""", (source_id,), cursor = cursor)
+
+def get_article_tags(article_id, cursor = None):
+	return glc.execute_db_query("""SELECT tag_id FROM article_tags WHERE article_id = %s""", (article_id,), cursor = cursor)
+
+def get_tag_articles(tag_id, cursor = None):
+	return glc.execute_db_query("""SELECT article_id FROM article_tags WHERE tag_id = %s""", (tag_id,), cursor = cursor)
 # ---------
 # | Links |
 # ---------
