@@ -2,9 +2,11 @@ import Utils.settings as settings
 settings.init()
 
 from os import path
-from wordcloud import WordCloud
+from wordcloud import WordCloud, STOPWORDS
 
 import Utils.connection_utils as glc
+
+stopwords = set(STOPWORDS)
 
 
 @glc.new_connection(primary = True, pass_to_function = False)
@@ -27,7 +29,7 @@ plt.imshow(wordcloud, interpolation='bilinear')
 plt.axis("off")
 
 # lower max_font_size
-wordcloud = WordCloud(max_font_size=40).generate(text)
+wordcloud = WordCloud(max_font_size=40, stopwords = stopwords).generate(text)
 plt.figure()
 plt.imshow(wordcloud, interpolation="bilinear")
 plt.axis("off")
