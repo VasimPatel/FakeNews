@@ -2,7 +2,7 @@
 # @Date:   2017-03-08 12:27:22
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-22 18:12:38
+# @Last modified time: 2017-03-26 01:26:14
 
 from unidecode import unidecode
 
@@ -31,20 +31,20 @@ def add_source(name, author_ids = None, connection = None, cursor = None, VERBOS
 
 	# Link sources to given authors
 	if not author_ids is None:
-		# Remove any previous, depricated, links
-		glc.execute_db_command("""DELETE FROM source_authors WHERE source_id = %s""", (source_id,), connection = connection, cursor = cursor)
-
 		# Insert proper links
 		for author_id in author_ids:
 			if db.get_author(author_id, cursor = cursor) is None:
 				print("ERROR: No author found in database with [id:%d]" % author_id)
 				raise EnvironmentError
 			else:
-				glc.execute_db_values_command("""INSERT INTO source_authors (source_id, author_id) VALUES (%s, %s)""", (source_id, author_id))
+				if db.get_source_author_link(source_id, author_id, cursor = cursor) is None:
+					glc.execute_db_values_command("""INSERT INTO source_authors (source_id, author_id) VALUES (%s, %s)""", (source_id, author_id))
 
-				# VERBOSE printing
-				if VERBOSE:
-					print("Linked [source_id:%d] to [author_id:%d]" % (source_id, author_id))
+					# VERBOSE printing
+					if VERBOSE:
+						print("Linked [source_id:%d] to [author_id:%d]" % (source_id, author_id))
+				elif VERBOSE:
+					print("[source_id:%d] already linked to [author_id:%d]" % (source_id, author_id))
 
 	return source_id
 
@@ -93,51 +93,56 @@ def add_article(title, url, timestamp, content, source_id, author_ids = None, ta
 
 	# Check to make sure that the authors referenced are already in the database and link the article to its authors and source
 	if not author_ids is None:
-		# Remove any previous, depricated, links to authors
-		glc.execute_db_command("""DELETE FROM article_authors WHERE article_id = %s""", (article_id,), connection = connection, cursor = cursor)
-		# Remove any previous, depricated, links from this source to authors
-		glc.execute_db_command("""DELETE FROM source_authors WHERE source_id = %s""", (source_id,), connection = connection, cursor = cursor)
-
 		for author_id in author_ids:
 			if db.get_author(author_id, cursor = cursor) is None:
 				print("ERROR: No author found in database with [id:%d]" % author_id)
 				raise EnvironmentError
 			else:
-				# Insert links from articles to authors
-				glc.execute_db_values_command("""INSERT INTO article_authors (article_id, author_id) VALUES (%s, %s)""", (
-					article_id,
-					author_id
-				), connection = connection, cursor = cursor)
-				# Insert links from sources to authors
-				glc.execute_db_values_command("""INSERT INTO source_authors (author_id, source_id) VALUES (%s, %s)""", (
-					author_id,
-					source_id
-				), connection = connection, cursor = cursor)
+				if db.get_article_author_link(article_id, author_id, cursor = cursor) is None:
+					# Insert links from articles to authors
+					glc.execute_db_values_command("""INSERT INTO article_authors (article_id, author_id) VALUES (%s, %s)""", (
+						article_id,
+						author_id
+					), connection = connection, cursor = cursor)
 
-				# VERBOSE printing
-				if VERBOSE:
-					print("Linked [article_id:%d] to [author_id:%d]" % (article_id, author_id))
-					print("Linked article's [source_id:%d] to [author_id:%d]" % (source_id, author_id))
+					# VERBOSE printing
+					if VERBOSE:
+						print("Linked [article_id:%d] to [author_id:%d]" % (article_id, author_id))
+				elif VERBOSE:
+					print("[article_id:%d] already linked to [author_id:%d]" % (article_id, author_id))
+
+				if db.get_source_author_link(source_id, author_id, cursor = cursor) is None:
+					# Insert links from sources to authors
+					glc.execute_db_values_command("""INSERT INTO source_authors (author_id, source_id) VALUES (%s, %s)""", (
+						author_id,
+						source_id
+					), connection = connection, cursor = cursor)
+
+					# VERBOSE printing
+					if VERBOSE:
+						print("Linked article's [source_id:%d] to [author_id:%d]" % (source_id, author_id))
+				elif VERBOSE:
+					print("Article's [source_id:%d] already linked to [author_id:%d]" % (source_id, author_id))
 
 	# Check to make sure that the tags references are already in the database
 	if not tag_ids is None:
-		# Remove any previous, depricated, links to tags
-		glc.execute_db_command("""DELETE FROM article_tags WHERE article_id = %s""", (article_id,), connection = connection, cursor = cursor)
-
 		for tag_id in tag_ids:
 			if db.get_tag(tag_id, cursor = cursor) is None:
 				print("ERROR: No tag found in database with [id:%d]" % source_id)
 				raise EnvironmentError
 			else:
-				# Insert links from articles to tags
-				glc.execute_db_values_command("""INSERT INTO article_tags (article_id, tag_id) VALUES (%s, %s)""", (
-					article_id,
-					tag_id
-				), connection = connection, cursor = cursor)
+				if db.get_article_tag_link(article_id, tag_id, cursor = cursor) is None:
+					# Insert links from articles to tags
+					glc.execute_db_values_command("""INSERT INTO article_tags (article_id, tag_id) VALUES (%s, %s)""", (
+						article_id,
+						tag_id
+					), connection = connection, cursor = cursor)
 
-				# VERBOSE printing
-				if VERBOSE:
-					print("Linked [article_id:%d] to [tag_id:%d]" % (article_id, tag_id))
+					# VERBOSE printing
+					if VERBOSE:
+						print("Linked [article_id:%d] to [tag_id:%d]" % (article_id, tag_id))
+				elif VERBOSE:
+					print("[article_id:%d] already linked to [tag_id:%d]" % (article_id, tag_id))
 
 	return article_id
 
@@ -164,43 +169,43 @@ def add_author(first_name, last_name, article_ids = None, source_ids = None, con
 
 	# Check to make sure that the articles referenced are already in the database
 	if not article_ids is None:
-		# Remove any previous, depricated, links to articles
-		glc.execute_db_command("""DELETE FROM article_authors WHERE author_id = %s""", (author_id,), connection = connection, cursor = cursor)
-
 		for article_id in article_ids:
 			if db.get_article(conn, cur, article_id, cursor = cursor) is None:
 				print("ERROR: No article found in database with [id:%d]" % author_id)
 				raise EnvironmentError
 			else:
-				# Insert links from articles to this author
-				glc.execute_db_values_command("""INSERT INTO article_authors (article_id, author_id) VALUES (%s, %s)""", (
-					article_id,
-					author_id
-				), connection = connection, cursor = cursor)
+				if db.get_article_author_link(article_id, author_id, cursor = cursor) is None:
+					# Insert links from articles to this author
+					glc.execute_db_values_command("""INSERT INTO article_authors (article_id, author_id) VALUES (%s, %s)""", (
+						article_id,
+						author_id
+					), connection = connection, cursor = cursor)
 
-				# VERBOSE printing
-				if VERBOSE:
-					print("Linked [author_id:%d] to [article_id:%d]" % (author_id, article_id))
+					# VERBOSE printing
+					if VERBOSE:
+						print("Linked [author_id:%d] to [article_id:%d]" % (author_id, article_id))
+				elif VERBOSE:
+					print("[author_id:%d] already linked to [article_id:%d]" % (author_id, article_id))
 
 	# Check to make sure that the sources references are already in the database
 	if not source_ids is None:
-		# Remove any previous, depricated, links to sources
-		glc.execute_db_command("""DELETE FROM source_authors WHERE author_id = %s""", (author_id,), connection = connection, cursor = cursor)
-
 		for source_id in source_ids:
 			if db.get_source(source_id, cursor = cursor) is None:
 				print("ERROR: No tag found in database with [id:%d]" % source_id)
 				raise EnvironmentError
 			else:
-				# Insert links from sources to this author
-				glc.execute_db_values_command("""INSERT INTO  (author_id, source_id) VALUES (%s, %s)""", (
-					author_id,
-					source_id
-				), connection = connection, cursor = cursor)
+				if db.get_source_author_link(source_id, author_id, cursor = cursor) is None:
+					# Insert links from sources to this author
+					glc.execute_db_values_command("""INSERT INTO  (author_id, source_id) VALUES (%s, %s)""", (
+						author_id,
+						source_id
+					), connection = connection, cursor = cursor)
 
-				# VERBOSE printing
-				if VERBOSE:
-					print("Linked [article_id:%d] to [source_id:%d]" % (author_id, source_id))
+					# VERBOSE printing
+					if VERBOSE:
+						print("Linked [article_id:%d] to [source_id:%d]" % (author_id, source_id))
+				elif VERBOSE:
+					print("[article_id:%d] already linked to [source_id:%d]" % (author_id, source_id))
 
 	return author_id
 
@@ -227,22 +232,22 @@ def add_tag(name, article_ids = None, connection = None, cursor = None, VERBOSE 
 
 	# Check to make sure that the authors referenced are already in the database
 	if not article_ids is None:
-		# Remove any previous, depricated, links to articles
-		glc.execute_db_command("""DELETE FROM article_tags WHERE tag_id = %s""", (tag_id,), connection = connection, cursor = cursor)
-
 		for article_id in article_ids:
 			if db.get_article(article_id, cursor = cursor) is None:
 				print("ERROR: No article found in database with [id:%d]" % author_id)
 				raise EnvironmentError
 			else:
-				# Insert links from articles to this tag
-				glc.execute_db_values_command("""INSERT INTO article_tags (article_id, tag_id) VALUES (%s, %s)""", (
-					article_id,
-					tag_id
-				), connection = connection, cursor = cursor)
+				if db.get_article_tag_link(article_id, tag_id, cursor = cursor) is None:
+					# Insert links from articles to this tag
+					glc.execute_db_values_command("""INSERT INTO article_tags (article_id, tag_id) VALUES (%s, %s)""", (
+						article_id,
+						tag_id
+					), connection = connection, cursor = cursor)
 
-				# VERBOSE printing
-				if VERBOSE:
-					print("Linked [tag_id:%d] to [article_id:%d]" % (tag_id, article_id))
+					# VERBOSE printing
+					if VERBOSE:
+						print("Linked [tag_id:%d] to [article_id:%d]" % (tag_id, article_id))
+				elif VERBOSE:
+					print("[tag_id:%d] already linked to [article_id:%d]" % (tag_id, article_id))
 
 	return tag_id
