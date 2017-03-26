@@ -2,12 +2,10 @@
 # @Date:   2017-03-06 18:54:50
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-20 18:09:55
+# @Last modified time: 2017-03-26 01:35:08
 
 import os
 from dotenv import load_dotenv, find_dotenv
-
-
 
 def init():
 	# Load the environment file

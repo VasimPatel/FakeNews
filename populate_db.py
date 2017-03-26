@@ -2,7 +2,7 @@
 # @Date:   2017-03-08 13:49:12
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-26 01:30:50
+# @Last modified time: 2017-03-26 01:38:20
 
 import Utils.settings as settings
 settings.init()
@@ -66,7 +66,6 @@ def read_json_data(filename):
 			# Read next 9999999 bytes of data from file
 			byte_data = file.read(9999999)
 
-	print("Finished loading maps")
 	# Return list of parsed articles
 	return articles
 

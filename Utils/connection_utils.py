@@ -2,7 +2,7 @@
 # @Date:   2017-03-10 17:49:29
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-20 21:41:08
+# @Last modified time: 2017-03-26 01:38:40
 
 import os
 import psycopg2
@@ -48,7 +48,7 @@ def new_connection(host = os.environ.get("DBHOST"), dbname = os.environ.get("DBN
 					else:
 						print("NOTE::You did not make the connection you opened primary and did not pass it to the function that opned it.")
 						print("NOTE::Therefore you have no way to access your connection.")
-						printf("NOTE::Check the pass_to_function parameter to make sure it is set to True if you do not intend to make the connection primary.")
+						print("NOTE::Check the pass_to_function parameter to make sure it is set to True if you do not intend to make the connection primary.")
 						resp = func(*args, **kwargs)
 
 				connection.commit()
