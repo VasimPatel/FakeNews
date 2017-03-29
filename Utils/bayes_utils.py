@@ -55,17 +55,31 @@ def build_class_dict(articles, sources):
 	return class_dict
 
 def classify_article(dictionaries, article):
-	#comment below when testing with test_classify_article
+	'''
+	Process:
+		INPUT: set of dictionaries associated with a unique source, a test article
+		OUTPUT: The source associated with the test article
+	
+	uncomment next line when testing with test_classify_article.py
+	tokens = article.split(" ")
+	'''
+
+	#comment next line when testing with test_classify_article.py
 	article_tokens = tokenize_article(article)
-	#uncomment below when testing with test_classify_article
-	#tokens = article.split(" ")
 	sums = {}
+
+	#initialize keys (source name) and values = 0 for each source-associated dictionary
 	for d in dictionaries.keys():
 		sums[d] = 0
 
+	#for each word in test article (which has been reduced to common stems)
 	for each_token in tokens:
+		#for each source collect the -log(count/words) associate with each word.
 		for dictionary_name, dictionary_values in zip(dictionaries.keys(),dictionaries.values()):
+			#if the word is in the sources dictionary
 			if dictionary_values.get(each_token) != None:
+				#add the value associated with the word in this source to the sum of words in this dictionary
 				sums[dictionary_name] = sums[dictionary_name] + dictionary_values[each_token]
 
+	#return the source with the minimum sum of words. The article is classified as coming from this source.
 	return min(sums, key=sums.get)
