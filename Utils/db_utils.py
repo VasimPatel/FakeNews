@@ -1,7 +1,7 @@
 # @Author: DivineEnder <DivineHP>
 # @Date:   2017-03-04 23:42:57
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-20 21:17:30
+# @Last modified time: 2017-03-29 13:58:56 
 
 import os
 import psycopg2
@@ -25,7 +25,7 @@ def add_table_to_db(table_name, *cols, connection = None, cursor = None, VERBOSE
 		cols_string = cols_string + col + ", "
 	cols_string = cols_string[0:-2]
 
-	gl.execute_db_command("""CREATE TABLE %s (%s)""", (table_name, cols_string), connection = connection, cursor = cursor)
+	glc.execute_db_command("""CREATE TABLE %s (%s)""", (table_name, cols_string), connection = connection, cursor = cursor)
 
 	if VERBOSE:
 		print("Added %d table with columns: ")
