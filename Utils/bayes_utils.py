@@ -37,3 +37,14 @@ def build_class_dict(articles):
 		class_dict[key] = -1 * math.log(float(class_dict[key]) / float(total_words))
 
 	return class_dict
+
+def classify_article(dictionaries, article):
+	article_tokens = bay.tokenize_article(article)
+
+	sums = {}
+
+	for each_token in tokens:
+		for each_dictionary in dictionaries.keys():
+			sums[each_dictionary] = sums[each_dictionary] + each_dictionary[each_token]
+
+	return min(sums, key=sums.get)
