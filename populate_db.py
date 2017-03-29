@@ -2,7 +2,7 @@
 # @Date:   2017-03-08 13:49:12
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-26 01:38:20
+# @Last modified time: 2017-03-28 15:47:52
 
 import Utils.settings as settings
 settings.init()
@@ -71,34 +71,37 @@ def read_json_data(filename):
 
 # Add the article to the database
 def add_json_article_to_db(article, source_name, VERBOSE = False):
-	tag_ids = []
-	for tag in article["tags"]:
-		db_tag = db.get_tag_named(tag)
-		if not db_tag:
-			tag_ids.append(edit.add_tag(tag, VERBOSE = VERBOSE))
-		else:
-			tag_ids.append(db_tag['tag_id'])
-	tag_ids = list(set(tag_ids))
-
-	author_ids = []
-	for author in article["author"].split("|"):
-		names = author.split(" ")
-		if len(names) == 2:
-			db_author = db.get_author_named(names[0], names[1])
-			if not db_author:
-				author_ids.append(edit.add_author(names[0], names[1], VERBOSE = VERBOSE))
+	if db.get_article_linked(article["url"]) is None:
+		tag_ids = []
+		for tag in article["tags"]:
+			db_tag = db.get_tag_named(tag)
+			if not db_tag:
+				tag_ids.append(edit.add_tag(tag, VERBOSE = VERBOSE))
 			else:
-				author_ids.append(db_author['author_id'])
+				tag_ids.append(db_tag['tag_id'])
+		tag_ids = list(set(tag_ids))
 
-	edit.add_article(article["title"],
-		article["url"],
-		parser.parse(article["date"]),
-		article["content"],
-		db.get_source_named(source_name)['source_id'],
-		author_ids,
-		tag_ids,
-		VERBOSE = VERBOSE
-	)
+		author_ids = []
+		for author in article["author"].split("|"):
+			names = author.split(" ")
+			if len(names) == 2:
+				db_author = db.get_author_named(names[0], names[1])
+				if not db_author:
+					author_ids.append(edit.add_author(names[0], names[1], VERBOSE = VERBOSE))
+				else:
+					author_ids.append(db_author['author_id'])
+
+		edit.add_article(article["title"],
+			article["url"],
+			parser.parse(article["date"]),
+			article["content"],
+			db.get_source_named(source_name)['source_id'],
+			author_ids,
+			tag_ids,
+			VERBOSE = VERBOSE
+		)
+	elif VERBOSE:
+		print("Article '%s' is already in the database." % article["title"])
 
 # Add all the source data to the database (tracks and prints progress to console)
 def add_source_data_to_db(source_data, source_name):
@@ -126,8 +129,8 @@ def add_source_data_to_db(source_data, source_name):
 
 @glc.new_connection(primary = True, pass_to_function = False)
 def main():
-	add_source_data_to_db(read_json_data("data/politico_data.json"), "Politico")
 	add_source_data_to_db(read_json_data("data/bb_data.json"), "BreitBart")
+	add_source_data_to_db(read_json_data("data/politico_data.json"), "Politico")
 
 if __name__ == "__main__":
 	main()
