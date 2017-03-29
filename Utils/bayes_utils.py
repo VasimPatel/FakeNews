@@ -39,12 +39,17 @@ def build_class_dict(articles):
 	return class_dict
 
 def classify_article(dictionaries, article):
-	article_tokens = bay.tokenize_article(article)
-
+	#comment below when testing with test_classify_article
+	article_tokens = tokenize_article(article)
+	#uncomment below when testing with test_classify_article
+	#tokens = article.split(" ")
 	sums = {}
+	for d in dictionaries.keys():
+		sums[d] = 0
 
 	for each_token in tokens:
-		for each_dictionary in dictionaries.keys():
-			sums[each_dictionary] = sums[each_dictionary] + each_dictionary[each_token]
+		for dictionary_name, dictionary_values in zip(dictionaries.keys(),dictionaries.values()):
+			if dictionary_values.get(each_token) != None:
+				sums[dictionary_name] = sums[dictionary_name] + dictionary_values[each_token]
 
 	return min(sums, key=sums.get)

@@ -1,15 +1,19 @@
-import Utils.settings as settings
-settings.init()
-
 from nltk import word_tokenize
 import Utils.connection_utils as glc
 import Utils.bayes_utils as bay
 
-glc.new_connection(primary = True, pass_to_function = False)
 def main():
-	pol_articles = glc.execute_db_query("""SELECT content FROM articles WHERE source_id = 1 LIMIT 1000""")
-	d = bay.classify_articles(pol_articles[0:-1])
-	c = bay.classify_article(d,pol_articles[-1]['content'])
+	#example source dictionaries
+	dict_1 = {"in":-.34, "hat": -.1, "eat": .05}
+	dict_2 = {"the":-.34, "in": -.22, "said": .1}
+	#set of sources with associated dictionary
+	dictionaries = {"dict_1": dict_1, "dict_2": dict_2}
+	#example test articles
+	article_1 = "in eat eat"
+	article_2 = "the in said"
+	#classify article
+	c = bay.classify_article(dictionaries, article_1)
+	#print source that article was classified to
 	print(c)
 
 if __name__ == "__main__":
