@@ -23,7 +23,7 @@ def main():
 
 	test_articles = articles1[:50] + articles2[:50]
 
-	total_tests=1
+	total_tests=0
 	total_correct=0
 
 	for test_article in test_articles:
@@ -33,13 +33,13 @@ def main():
 		if int(test_id) == int(classified_id):
 			total_correct += 1
 
+		total_tests += 1
+
 		sys.stdout.write("Correctly classified: " + str(total_correct) + "/" + str(total_tests) + '\r')
 		sys.stdout.flush()
 
-		total_tests += 1
-
 	p_c = total_correct / total_tests
-	print("\nPercent correct: " + str(p_c*100) + "%")
+	print("\nPercent correct: " + ("%.2f" % round(p_c*100,2)) + "%")
 
 
 
