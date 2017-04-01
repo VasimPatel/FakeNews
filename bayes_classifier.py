@@ -7,19 +7,39 @@
 import Utils.settings as settings
 settings.init()
 
+import sys
 from nltk import word_tokenize
 import Utils.connection_utils as glc
 import Utils.bayes_utils as bayes
 
 @glc.new_connection(primary = True, pass_to_function = False)
 def main():
-	articles = glc.execute_db_query("SELECT source_id, content FROM articles LIMIT 1000")
+	articles1 = glc.execute_db_query("SELECT source_id, content FROM articles WHERE source_id=1 LIMIT 500")
+	articles2 = glc.execute_db_query("SELECT source_id, content FROM articles WHERE source_id=2 LIMIT 500")
+
 	sources = glc.execute_db_query("SELECT source_id FROM sources")
-	# pol_articles = glc.execute_db_query("""SELECT content FROM articles WHERE source_id = 1 LIMIT 1000""")
+	class_dict = bayes.build_class_dict(articles1[50:] + articles2[50:], sources)
 
-	class_dict = bayes.build_class_dict(articles, sources)
 
-	#print(class_dict[1].items())
+	test_articles = articles1[:50] + articles2[:50]
+
+	total_tests=1
+	total_correct=0
+
+	for test_article in test_articles:
+		test_id = test_article["source_id"]
+		classified_id, sums = bayes.classify_article(class_dict, test_article)
+
+		if int(test_id) == int(classified_id):
+			total_correct += 1
+
+		sys.stdout.write("Correctly classified: " + str(total_correct) + "/" + str(total_tests) + '\r')
+		sys.stdout.flush()
+
+		total_tests += 1
+
+	p_c = total_correct / total_tests
+	print("\nPercent correct: " + str(p_c*100) + "%")
 
 
 

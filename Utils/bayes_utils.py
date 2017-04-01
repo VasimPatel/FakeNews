@@ -73,13 +73,13 @@ def classify_article(dictionaries, article):
 		sums[d] = 0
 
 	#for each word in test article (which has been reduced to common stems)
-	for each_token in tokens:
+	for each_token in article_tokens:
 		#for each source collect the -log(count/words) associate with each word.
-		for dictionary_name, dictionary_values in zip(dictionaries.keys(),dictionaries.values()):
+		for dictionary_name, dictionary_values in dictionaries.items():
 			#if the word is in the sources dictionary
 			if dictionary_values.get(each_token) != None:
 				#add the value associated with the word in this source to the sum of words in this dictionary
-				sums[dictionary_name] = sums[dictionary_name] + dictionary_values[each_token]
+				sums[dictionary_name] = sums[dictionary_name] - dictionary_values[each_token]
 
 	#return the source with the minimum sum of words. The article is classified as coming from this source.
-	return min(sums, key=sums.get)
+	return min(sums, key=sums.get), sums
