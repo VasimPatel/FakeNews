@@ -2,7 +2,7 @@
 # @Date:   2017-03-29 14:19:15
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-04-03 20:51:42
+# @Last modified time: 2017-04-04 14:42:24
 
 import Utils.settings as settings
 settings.init()
@@ -68,6 +68,8 @@ def get_data(num_tests, test_variance = 0, num_sources = None, num_articles = No
 
 	return sources, training_articles, test_articles
 
+# NLTK STUFF
+# NOTE:: This function DOES NOT WORK. Python runs out of memory before it can actually create the training list needed for NLTK (this was tested only pulling 20 articles total)
 def nltk_bayes():
 	print("\n" + ("-" * 10) + "Querying data" + ("-" * 10))
 	sources, training_articles, test_articles = get_data(100, test_variance = .30, num_articles = 1000)
@@ -81,13 +83,16 @@ def nltk_bayes():
 	classifier.show_most_informative_features()
 
 def main():
+	# Get data from database for classification
 	print("\n" + ("-" * 10) + "Querying data" + ("-" * 10))
-	sources, training_articles, test_articles = get_data(100, test_variance = .30, num_articles = 1000)
+	sources, training_articles, test_articles = get_data(5000, test_variance = .30)
 	print("\n" + ("-" * 10) + ("-" * len("Querying data")) + ("-" * 10))
 
 	#Build the network for classification
+	print("\n" + ("-" * 10) + "Building classifier" + ("-" * 10))
 	class_dict = bayes.build_class_dict(training_articles, sources)
 	print("Classifier has been built successfully!")
+	print("\n" + ("-" * 10) + ("-" * len("Building classifier")) + ("-" * 10))
 
 	print("\n" + ("-"*10) + "Results" + ("-"*10))
 
@@ -100,7 +105,7 @@ def main():
 	for test_article in test_articles:
 		test_source_id = test_article["source_id"]
 		# Classify the article
-		classified_id, sums = bayes.classify_article(class_dict, test_article)
+		classified_id, sums = bayes.classify_article(class_dict, test_article, overfit = True)
 
 		# Count number of correct (overall and by source)
 		if int(test_source_id) == int(classified_id):
@@ -115,13 +120,13 @@ def main():
 		sys.stdout.write("Correctly Classified: " + str(source_stats["overall"]["correct"]) + "/" + str(source_stats["overall"]["total"]) + '\r')
 		sys.stdout.flush()
 
-	print("\nClassification of: ")
+	print("\nClassification of : ")
 	# Print out source related statistics
 	for source in sources:
 		source_correct = source_stats[source["source_id"]]["correct"]
 		source_total = source_stats[source["source_id"]]["total"]
 		source_percent = source_correct / source_total
-		print("\t%s accuracy was %.2f%% (%d/%d)" % (source["name"], round(source_percent * 100, 2), source_correct, source_total))
+		print("\t%s had an accuracy was %.2f%% (%d/%d)" % (source["name"], round(source_percent * 100, 2), source_correct, source_total))
 
 	print("\nOverall classification accuracy was %.2f%% (%d/%d)" % (round((source_stats["overall"]["correct"] / source_stats["overall"]["total"]) * 100, 2), source_stats["overall"]["correct"], source_stats["overall"]["total"]))
 
