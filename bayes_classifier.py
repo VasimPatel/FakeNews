@@ -2,85 +2,129 @@
 # @Date:   2017-03-29 14:19:15
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-29 15:22:47
+# @Last modified time: 2017-04-03 20:51:42
 
 import Utils.settings as settings
 settings.init()
 
 import sys
-from nltk import word_tokenize
+import nltk
+from random import random
 from random import randint
 import Utils.connection_utils as glc
 import Utils.bayes_utils as bayes
 
 @glc.new_connection(primary = True, pass_to_function = False)
-def main():
+def get_data(num_tests, test_variance = 0, num_sources = None, num_articles = None):
+	# Get specified number of sources from database (gets all if no number sources passed in)
+	sources = None
+	if num_sources is None:
+		sources = glc.execute_db_query("SELECT source_id, name FROM sources")
+	else:
+		sources = glc.execute_db_query("SELECT source_id, name FROM sources LIMIT %s", (num_sources,))
+	print("Sources query completed. Retrieved %d sources from database." % len(sources))
 
-	numTests = 1000
-	minPercentBound = .35
+	# Build a dictionary of source_id keys which contain lists of articles from that source as their values
+	source_article_dict = {}
+	for source in sources:
+		source_article_dict[source["source_id"]] = None
+		if num_articles is None:
+			source_article_dict[source["source_id"]] = glc.execute_db_query("SELECT article_id, source_id, content FROM articles WHERE source_id=%s", (source["source_id"],))
+		else:
+			source_article_dict[source["source_id"]] = glc.execute_db_query("SELECT article_id, source_id, content FROM articles WHERE source_id=%s LIMIT %s", (source["source_id"], num_articles))
 
-	sources = glc.execute_db_query("SELECT source_id FROM sources")
-	print("Sources query completed!")
-
-	articles1 = glc.execute_db_query("SELECT article_id, source_id, content FROM articles WHERE source_id=1") #LIMIT 50000")
-	print("Politico query completed!")
-
-	articles2 = glc.execute_db_query("SELECT article_id, source_id, content FROM articles WHERE source_id=2") #LIMIT 50000")
-	print("Breitbart query completed!")
+		print("%s query completed! Retrived %d articles from database." % (source["name"], len(source_article_dict[source["source_id"]])))
 
 	print("All queries completed, data fetched!")
 
-	#Get a random number 1-100
-	splitNum = randint(int(numTests * minPercentBound), numTests - int(numTests * minPercentBound))
+	# Get the even distribution percent that would happen with this many sources (ex. 3 sources this would be .33)
+	even_split_percent = float(1) / len(sources)
+	# Get the range on the bounded percentage split (ex. .33 with a variance of 10% would have a range of .033)
+	bound_range = even_split_percent * test_variance
+
+	# Create a list of how each of the sources are going to be split
+	source_splits = [even_split_percent] * len(sources)
+	# Randomly split sources (leave out last one as it is calculated using the previous source distributions)
+	for i in range(0, len(sources) - 1):
+		# Minimum bound for number of tests can pick
+		min_bound = int(num_tests * (even_split_percent - bound_range))
+		# Maximum bound for number of tests can pick
+		max_bound = int(num_tests * (even_split_percent + bound_range))
+
+		# Pick a number inbetween these bounds
+		source_splits[i] = randint(min_bound, max_bound)
+	# Claculates the last distribution based on previous distributions and how much is left
+	source_splits[-1] = num_tests - sum(source_splits[:-1])
+
+	print("\nTest data contains: ")
+	# Create training and test article lists using previously generated list splits
+	training_articles = []
+	test_articles = []
+	for i in range(0, len(sources)):
+		training_articles.extend(source_article_dict[sources[i]["source_id"]][source_splits[i]:])
+		test_articles.extend(source_article_dict[sources[i]["source_id"]][:source_splits[i]])
+
+		print("\t%d %s articles" % (source_splits[i], sources[i]["name"]))
+
+	return sources, training_articles, test_articles
+
+def nltk_bayes():
+	print("\n" + ("-" * 10) + "Querying data" + ("-" * 10))
+	sources, training_articles, test_articles = get_data(100, test_variance = .30, num_articles = 1000)
+	print("\n" + ("-" * 10) + ("-" * len("Querying data")) + ("-" * 10))
+
+	print("Building training list.")
+	nltk_training_list = bayes.build_nltk_training_list(training_articles)
+	print("Building NLTK classifier from built training list.")
+	classifier = nltk.NativeBayesClassifier(nltk_training_list)
+	print("Classifier has been built.")
+	classifier.show_most_informative_features()
+
+def main():
+	print("\n" + ("-" * 10) + "Querying data" + ("-" * 10))
+	sources, training_articles, test_articles = get_data(100, test_variance = .30, num_articles = 1000)
+	print("\n" + ("-" * 10) + ("-" * len("Querying data")) + ("-" * 10))
 
 	#Build the network for classification
-	class_dict = bayes.build_class_dict(articles1[splitNum:] + articles2[(numTests -  splitNum):], sources)
+	class_dict = bayes.build_class_dict(training_articles, sources)
 	print("Classifier has been built successfully!")
 
-	test_articles = articles1[:splitNum] + articles2[:(numTests - splitNum)]
+	print("\n" + ("-"*10) + "Results" + ("-"*10))
 
-	#Print number of articles from each source
-	print("\nNumber of Articles")
-	print("Politico = %d" % splitNum)
-	print("Breitbart = %d" % (numTests - splitNum))
+	# Create a dictionary for storing statistics for the classification results
+	source_stats = { "overall": { "total": 0, "correct": 0 } }
+	for source in sources:
+		source_stats[source["source_id"]] = { "total": 0, "correct": 0 }
 
-
-	print("\nResults")
-
-	#Classify the articles
-	total_tests=0
-	total_correct=0
-	polCorrect = 0
-
+	# Classify the articles and print stats
 	for test_article in test_articles:
-		test_id = test_article["source_id"]
+		test_source_id = test_article["source_id"]
+		# Classify the article
 		classified_id, sums = bayes.classify_article(class_dict, test_article)
 
-		if int(test_id) == int(classified_id):
-			if int(test_id) == 1:
-				polCorrect = polCorrect + 1
-			total_correct += 1
+		# Count number of correct (overall and by source)
+		if int(test_source_id) == int(classified_id):
+			source_stats["overall"]["correct"] = source_stats["overall"]["correct"] + 1
+			source_stats[test_source_id]["correct"] = source_stats[test_source_id]["correct"] + 1
 
+		# Increase overall total and source total
+		source_stats[test_source_id]["total"] = source_stats[test_source_id]["total"] + 1
+		source_stats["overall"]["total"] = source_stats["overall"]["total"] + 1
 
-		total_tests += 1
-
-		sys.stdout.write("Correctly Classified: " + str(total_correct) + "/" + str(total_tests) + '\r')
+		# Write progress of classification to screen
+		sys.stdout.write("Correctly Classified: " + str(source_stats["overall"]["correct"]) + "/" + str(source_stats["overall"]["total"]) + '\r')
 		sys.stdout.flush()
 
-	p_c = total_correct / total_tests
-	p_c_p = polCorrect / splitNum
-	p_c_b = (total_correct - polCorrect) / (numTests - splitNum)
+	print("\nClassification of: ")
+	# Print out source related statistics
+	for source in sources:
+		source_correct = source_stats[source["source_id"]]["correct"]
+		source_total = source_stats[source["source_id"]]["total"]
+		source_percent = source_correct / source_total
+		print("\t%s accuracy was %.2f%% (%d/%d)" % (source["name"], round(source_percent * 100, 2), source_correct, source_total))
 
-	print("\nPolitico Correctly Classified: %d/%d" %(polCorrect, splitNum))
-	print("Breitbart Correctly Classified: %d/%d" %(total_correct - polCorrect, numTests - splitNum))
-
-	print("\nPolitico Percent Correct: " + ("%.2f" % round(p_c_p*100,2)) + "%")
-	print("Breitbart Percent Correct: " + ("%.2f" % round(p_c_b*100,2)) + "%")
-	print("\nPercent Correct: " + ("%.2f" % round(p_c*100,2)) + "%")
-
-
-
-
+	print("\nOverall classification accuracy was %.2f%% (%d/%d)" % (round((source_stats["overall"]["correct"] / source_stats["overall"]["total"]) * 100, 2), source_stats["overall"]["correct"], source_stats["overall"]["total"]))
 
 if __name__ == "__main__":
 	main()
+	# nltk_bayes()
