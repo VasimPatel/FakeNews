@@ -2,10 +2,8 @@
 # @Date:   2017-03-08 12:27:35
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-26 00:45:44
+# @Last modified time: 2017-04-04 18:56:44
 
-# from Utils.db_utils import commits_connection as cc
-# from Utils.db_utils import uses_connection as uc
 import Utils.connection_utils as glc
 
 # -----------
