@@ -2,7 +2,7 @@
 # @Date:   2017-03-29 14:47:11
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-04-04 14:41:25
+# @Last modified time: 2017-04-04 18:29:14
 
 import Utils.settings as settings
 settings.init()
@@ -83,7 +83,7 @@ def build_class_dict(articles, sources):
 
 	return class_dict
 
-def classify_article(dictionaries, article, overfit = False):
+def classify_article(dictionaries, article, overfit = 0):
 	'''
 	Process:
 		INPUT: set of dictionaries associated with a unique source, a test article
@@ -116,8 +116,8 @@ def classify_article(dictionaries, article, overfit = False):
 			if token_in_sources["all"]:
 				sums[source_id] = sums[source_id] + dictionaries[source_id]["classifier"][token]
 			# If the token is not in all sources then add 1 to the sources which it is not in (picking the minimum makes it less like to pick sources with words that don't appear in corpus)
-			elif not token_in_sources[source_id] and overfit:
-				sums[source_id] = sums[source_id] + 1
+			elif not token_in_sources[source_id]:
+				sums[source_id] = sums[source_id] + overfit
 
 	# Teturn the source with the minimum sum of words. The article is classified as coming from this source.
 	return min(sums, key=sums.get), sums

@@ -2,7 +2,7 @@
 # @Date:   2017-03-29 14:19:15
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-04-04 14:42:24
+# @Last modified time: 2017-04-04 17:51:27
 
 import Utils.settings as settings
 settings.init()
@@ -78,14 +78,14 @@ def nltk_bayes():
 	print("Building training list.")
 	nltk_training_list = bayes.build_nltk_training_list(training_articles)
 	print("Building NLTK classifier from built training list.")
-	classifier = nltk.NativeBayesClassifier(nltk_training_list)
+	classifier = nltk.NaiveBayesClassifier(nltk_training_list)
 	print("Classifier has been built.")
 	classifier.show_most_informative_features()
 
 def main():
 	# Get data from database for classification
 	print("\n" + ("-" * 10) + "Querying data" + ("-" * 10))
-	sources, training_articles, test_articles = get_data(5000, test_variance = .30)
+	sources, training_articles, test_articles = get_data(5000, test_variance = .30, num_articles = 50000)
 	print("\n" + ("-" * 10) + ("-" * len("Querying data")) + ("-" * 10))
 
 	#Build the network for classification
@@ -105,7 +105,7 @@ def main():
 	for test_article in test_articles:
 		test_source_id = test_article["source_id"]
 		# Classify the article
-		classified_id, sums = bayes.classify_article(class_dict, test_article, overfit = True)
+		classified_id, sums = bayes.classify_article(class_dict, test_article, overfit = 1)
 
 		# Count number of correct (overall and by source)
 		if int(test_source_id) == int(classified_id):
