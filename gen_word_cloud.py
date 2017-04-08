@@ -19,7 +19,7 @@ import Utils.connection_utils as glc
 @glc.new_connection(primary = True, pass_to_function = False)
 def concatContent():
 	# All articles in november
-	articles = glc.execute_db_query("SELECT content FROM articles WHERE created_at BETWEEN '2016-11-01 00:00:00' AND '2016-11-30 23:59:59'")
+	articles = glc.execute_db_query("SELECT content FROM articles WHERE created_at BETWEEN '2016-11-01 00:00:00' AND '2016-11-30 23:59:59' AND source_id = 2")
 	text = ""
 	for article in articles :
 		contents = article["content"]
@@ -30,23 +30,30 @@ def main():
 	# Stop words
 	stopwords = set(STOPWORDS)
 	stopwords.add("said")
+	#stopwords.add("Republican")
+	#stopwords.add("Clinton")
 
 	# Get text
 	text = concatContent()
 	# Create image mask from logo
-	img_mask = np.array(Image.open("data/wordcloud/logos/p_logo0.png"))
+	#img_mask = np.array(Image.open("data/wordcloud/logos/p_logo0.png"))
 	# Setup word cloud
-	wc = WordCloud(background_color="white", max_words=2000, mask=img_mask, stopwords=stopwords)
+	#wc = WordCloud(background_color="white", mask=img_mask, stopwords=stopwords)
 	# Generate a word cloud image
-	wc.generate(text)
 	# Write word cloud image to file
-	wc.to_file("data/wordcloud/clouds/test.png")
+	#wc.to_file("data/wordcloud/clouds/test.png")
+	#plt.imshow(wc, interpolation='bilinear')
+	#plt.axis("off")
+	#plt.figure()
+	#plt.imshow(img_mask, cmap=plt.cm.gray, interpolation='bilinear')
+	#plt.axis("off")
+	#plt.show()
 
-	# Display image
-	plt.imshow(wc, interpolation='bilinear')
-	plt.axis("off")
+	# lower max_font_size
+	wc = WordCloud(max_font_size=40, stopwords=stopwords).generate(text)
+	wc.to_file("data/wordcloud/clouds/test.png")
 	plt.figure()
-	plt.imshow(img_mask, cmap=plt.cm.gray, interpolation='bilinear')
+	plt.imshow(wc, interpolation="bilinear")
 	plt.axis("off")
 	plt.show()
 
