@@ -2,12 +2,12 @@
 # @Date:   2017-03-08 12:27:22
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-26 01:26:14
+# @Last modified time: 2017-04-09 22:53:11
 
 from unidecode import unidecode
 
 import Utils.connection_utils as glc
-import Utils.get_fakenews_db as db
+import Utils.get_db_utils as db
 
 def add_source(name, author_ids = None, connection = None, cursor = None, VERBOSE = False):
 	# Check to see whether source is already in the table
