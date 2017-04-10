@@ -2,14 +2,14 @@
 # @Date:   2017-03-08 14:07:12
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-28 21:31:20
+# @Last modified time: 2017-04-09 22:52:58
 
 import Utils.settings as settings
 settings.init()
 
 import os
 import Utils.db_utils as db_utils
-import Utils.get_fakenews_db as db
+import Utils.get_db_utils as db
 
 @db_utils.new_connection(primary = True, pass_to_function = False)
 def main():

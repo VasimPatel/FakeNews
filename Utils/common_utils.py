@@ -2,7 +2,7 @@
 # @Date:   2017-03-21 23:45:32
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-22 00:05:48
+# @Last modified time: 2017-04-10 14:43:38
 
 import sys
 import datetime
@@ -33,7 +33,9 @@ def progress_bar(bar_length, progress, max_progress, cur_runtime = None, last_ru
 	sys.stdout.flush()
 	sys.stdout.write("\r%s" % (" " * (bar_length*3)))# + len(str(time_to_finish)))))
 	sys.stdout.flush()
-	sys.stdout.write("\r[%s]  %02d%%  ETA (full runtime): %s  ETA (indv. runtime): %s" % (("#" * display_percent) + (" " * (bar_length - display_percent)),
+	sys.stdout.write("\r[%s] %d/%d (%02d%%)  ETA (full runtime): %s  ETA (indv. runtime): %s" % (("#" * display_percent) + (" " * (bar_length - display_percent)),
+		progress,
+		max_progress,
 		percent * 100,
 		str(time_to_finish_cest),
 		str(time_to_finish_lest)))
