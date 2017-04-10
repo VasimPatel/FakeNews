@@ -1,7 +1,7 @@
 # @Author: DivineEnder <DivineHP>
 # @Date:   2017-03-04 23:27:36
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-28 15:44:46
+# @Last modified time: 2017-04-10 00:41:34
 
 import Utils.settings as settings
 settings.init()
@@ -56,6 +56,12 @@ def setup_tags():
 		tag_name varchar(255) UNIQUE
 	)""")
 
+def setup_tokens():
+	glc.execute_db_command("""CREATE TABLE tokens (
+		token_id serial UNIQUE PRIMARY KEY,
+		token varchar(50) UNIQUE
+	)""")
+
 def setup_indexes():
 	glc.execute_db_command("""CREATE INDEX tag_name_skey ON tags (tag_name)""")
 	glc.execute_db_command("""CREATE INDEX source_name_skey ON sources (name)""")
@@ -73,6 +79,7 @@ def setup_indexes():
 	glc.execute_db_command("""CREATE UNIQUE INDEX ar_au_unique_skey ON article_authors (article_id, author_id)""")
 	glc.execute_db_command("""CREATE UNIQUE INDEX s_au_unique_skey ON source_authors (source_id, author_id)""")
 	glc.execute_db_command("""CREATE UNIQUE INDEX ar_t_unique_skey ON article_tags (article_id, tag_id)""")
+	glc.execute_db_command("""CREATE INDEX token_skey ON tokens (token)""")
 
 @glc.new_connection(primary = True, pass_to_function = False)
 def main():
@@ -80,6 +87,7 @@ def main():
 	setup_articles()
 	setup_authors()
 	setup_tags()
+	setup_tokens()
 	setup_linking_tables()
 	setup_indexes()
 

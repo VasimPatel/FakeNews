@@ -2,16 +2,17 @@
 # @Date:   2017-03-08 13:49:12
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-03-28 15:47:52
+# @Last modified time: 2017-04-10 18:13:59
 
 import Utils.settings as settings
 settings.init()
 
 import os
+import Utils.bayes_utils as bu
 import Utils.common_utils as utils
 import Utils.connection_utils as glc
-import Utils.edit_fakenews_db as edit
-import Utils.get_fakenews_db as db
+import Utils.edit_db_utils as edit
+import Utils.get_db_utils as db
 
 import sys
 import json
@@ -127,10 +128,12 @@ def add_source_data_to_db(source_data, source_name):
 
 	print("\nFinished adding %d articles from %s to the database." % (len(source_data), source_name))
 
-@glc.new_connection(primary = True, pass_to_function = False)
+# @glc.new_connection(primary = True, pass_to_function = False)
 def main():
-	add_source_data_to_db(read_json_data("data/bb_data.json"), "BreitBart")
-	add_source_data_to_db(read_json_data("data/politico_data.json"), "Politico")
+	# add_source_data_to_db(read_json_data("data/bb_data.json"), "BreitBart")
+	# add_source_data_to_db(read_json_data("data/politico_data.json"), "Politico")
+	# glc.execute_db_command("""DELETE FROM tokens""")
+	bu.build_token_table()
 
 if __name__ == "__main__":
 	main()

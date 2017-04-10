@@ -2,28 +2,68 @@
 # @Date:   2017-03-29 14:47:11
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-04-04 18:29:14
+# @Last modified time: 2017-04-10 17:53:00
 
 import Utils.settings as settings
 settings.init()
 
 import math
+import datetime
+from psycopg2.extras import execute_values
+from unidecode import unidecode
 from nltk import word_tokenize
 from wordcloud import STOPWORDS
+
+import Utils.common_utils as utils
 import Utils.connection_utils as glc
 
 def tokenize_article(article):
 	# Build list of stopwords to remove
 	stopwords = set(STOPWORDS)
-	stopwords.add("said")
 	# Tokenize the article using nltk
 	tokens = word_tokenize(article["content"])
 	# Remove all stop words from tokens
 	for stop_word in stopwords:
-		tokens = [token.lower() for token in tokens if not token.lower() == stop_word.lower()]
+		tokens = [token for token in tokens if not token.lower() == stop_word.lower()]
 
 	# Return article tokens
 	return tokens
+
+def article_tokens_to_db(article):
+	for token in tokenize_article(article):
+		glc.execute_db_command("""INSERT INTO tokens (token) SELECT %s WHERE NOT EXISTS (SELECT token FROM tokens WHERE token = %s)""", (token, token))#ON CONFLICT ON CONSTRAINT tokens_token_key DO NOTHING""", (token,))
+
+@glc.new_connection(primary = True, pass_to_function = True)
+def build_token_table(connection, cursor):
+	articles = glc.execute_db_query("""SELECT content FROM articles""")
+
+	tokens = []
+
+	print("Building token list from articles...")
+	for i in range(0, len(articles)):
+		tokens.extend(tokenize_article(articles[i]))
+		tokens = list(set(tokens))
+		utils.progress_bar(50, i+1, len(articles))
+	print()
+
+	print("Writing tokens to database...")
+	tokens = [(token,) for token in tokens]
+	execute_values(cursor, """INSERT INTO tokens (token) VALUES %s""", tokens)#ON CONFLICT DO NOTHING""", tokens)
+	# 	glc.execute_db_values("""INSERT INTO tokens (token) SELECT %s WHERE NOT EXISTS (SELECT token FROM tokens WHERE token = %s)""", (token, token))
+	# # Track total runtime
+	# total_runtime = 0
+	# # Set the last progress display time to the current time
+	# lpd_time = datetime.datetime.now()
+	# for i in range(0, len(articles)):
+	# 	runtime = utils.time_it(tokenize_article, articles[i])
+	# 	# Total runtime of whole process
+	# 	total_runtime = total_runtime + runtime
+	# 	# Display only updates after at least 1 second has passed
+	# 	if (datetime.datetime.now() - lpd_time) > datetime.timedelta(seconds = 1):
+	# 		# Display progress bar
+	# 		utils.progress_bar(50, i+1, len(articles), cur_runtime = total_runtime, last_runtime = runtime)
+	# 		# Update the last progress display time
+	# 		lpd_time = datetime.datetime.now()
 
 def build_nltk_training_list(articles):
 	training_list = []
