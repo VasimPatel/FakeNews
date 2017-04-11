@@ -2,23 +2,23 @@
 # @Date:   2017-03-08 14:07:12
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-04-09 22:52:58
+# @Last modified time: 2017-04-10 20:35:24
 
-import Utils.settings as settings
+from Utils import settings
 settings.init()
 
 import os
-import Utils.db_utils as db_utils
-import Utils.get_db_utils as db
+from Utils import db_utils
+from Utils import connection_utils as glc
+from Utils import get_db_utils as db
 
-@db_utils.new_connection(primary = True, pass_to_function = False)
+@glc.new_connection(primary = True, pass_to_function = False)
 def main():
 	print("You have properly connected to the database!")
 	print("Whoohooo!")
 
 	print("\nYou should now see a list of tables in the database...")
 	db_utils.list_all_db_tables()
-	db.get_tags_named(["Elections", "Elections 2016"])
 
 	print("\nEverything if everything seemed to print correctly you should be connected.")
 
