@@ -9,7 +9,7 @@ from Utils import connection_utils as glc
 
 class Features:
 	def __init__(self):
-		self.feature_list = ['ReadingLevel', 'Source']
+		self.feature_list = ['ReadingLevel', 'Source', 'LexiDiversity']
 
 	def get_features(self, article):
 		feature_vector = {}

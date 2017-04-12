@@ -25,15 +25,16 @@ class MyCorpus(object):
 		for tokens in iter_docs(self.articles, self.stoplist):
 			yield self.dictionary.doc2bow(tokens)
 
-logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', 
-                    level=logging.INFO)
+def main():
+	logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', 
+	                    level=logging.INFO)
 
-MODELS_DIR = "models/"
-query = "SELECT content FROM articles  WHERE created_at BETWEEN '2015-10-01 00:00:00' AND '2016-12-30 23:59:59'"
-# WHERE created_at BETWEEN '2016-10-01 00:00:00' AND '2016-12-30 23:59:59'
-stoplist = set(nltk.corpus.stopwords.words("english"))
-corpus = MyCorpus(query, stoplist)
+	MODELS_DIR = "topic_modeling/models/"
+	query = "SELECT * FROM articles  WHERE created_at BETWEEN '2016-11-01 00:00:00' AND '2016-12-30 23:59:59'"
+	# WHERE created_at BETWEEN '2016-10-01 00:00:00' AND '2016-12-30 23:59:59'
+	stoplist = set(nltk.corpus.stopwords.words("english"))
+	corpus = MyCorpus(query, stoplist)
 
-corpus.dictionary.save(os.path.join(MODELS_DIR, "mtsamples.dict"))
-gennylt.corpora.MmCorpus.serialize(os.path.join(MODELS_DIR, "mtsamples.mm"), 
-                                  corpus)
+	corpus.dictionary.save(os.path.join(MODELS_DIR, "mtsamples.dict"))
+	gennylt.corpora.MmCorpus.serialize(os.path.join(MODELS_DIR, "mtsamples.mm"), 
+	                                  corpus)
