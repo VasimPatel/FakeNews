@@ -2,7 +2,7 @@
 # @Date:   2017-03-21 23:45:32
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-04-10 14:43:38
+# @Last modified time: 2017-04-13 09:43:11
 
 import sys
 import datetime
@@ -39,3 +39,23 @@ def progress_bar(bar_length, progress, max_progress, cur_runtime = None, last_ru
 		percent * 100,
 		str(time_to_finish_cest),
 		str(time_to_finish_lest)))
+
+def loop_display_progress(l, func, *func_args):
+	# Track total runtime
+	total_runtime = 0
+	# Set the last progress display time to the current time
+	lpd_time = datetime.datetime.now()
+	# Loop through passed in list
+	for i in range(0, len(l)):
+		# execute the given function on the list element and all other args passed to function
+		runtime = time_it(func, l[i], *func_args)
+		# Total runtime of whole process
+		total_runtime = total_runtime + runtime
+		# Display only updates after at least 1 second has passed
+		if (datetime.datetime.now() - lpd_time) > datetime.timedelta(seconds = 1):
+			# Display progress bar
+			progress_bar(50, i+1, len(l), cur_runtime = total_runtime, last_runtime = runtime)
+			# Update the last progress display time
+			lpd_time = datetime.datetime.now()
+
+	print()

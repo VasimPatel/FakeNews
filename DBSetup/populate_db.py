@@ -2,7 +2,7 @@
 # @Date:   2017-03-08 13:49:12
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-04-10 18:13:59
+# @Last modified time: 2017-04-11 18:49:05
 
 import Utils.settings as settings
 settings.init()
@@ -132,7 +132,6 @@ def add_source_data_to_db(source_data, source_name):
 def main():
 	# add_source_data_to_db(read_json_data("data/bb_data.json"), "BreitBart")
 	# add_source_data_to_db(read_json_data("data/politico_data.json"), "Politico")
-	# glc.execute_db_command("""DELETE FROM tokens""")
 	bu.build_token_table()
 
 if __name__ == "__main__":
