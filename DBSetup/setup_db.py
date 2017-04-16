@@ -1,7 +1,7 @@
 # @Author: DivineEnder <DivineHP>
 # @Date:   2017-03-04 23:27:36
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-04-16 14:43:01
+# @Last modified time: 2017-04-16 15:41:40
 
 import Utils.settings as settings
 settings.init()
@@ -14,7 +14,8 @@ import Utils.connection_utils as glc
 def setup_sources():
 	glc.execute_db_command("""CREATE TABLE sources (
 		source_id serial UNIQUE PRIMARY KEY,
-		name varchar(255) UNIQUE NOT NULL
+		name varchar(255) UNIQUE NOT NULL,
+		base_url varchar(512) UNIQUE
 	)""")
 
 def setup_articles():
@@ -24,7 +25,10 @@ def setup_articles():
 		url varchar(512) NOT NULL,
 		publish_date TIMESTAMP WITH TIME ZONE NOT NULL,
 		content text NOT NULL,
-		source_id integer NOT NULL REFERENCES sources on DELETE RESTRICT
+		main_img_url varchar(1024) UNIQUE,
+		source_id integer NOT NULL REFERENCES sources on DELETE RESTRICT,
+		is_fake boolean,
+		fake_type varchar(25) NOT NULL DEFAULT 'NO_CLASS'
 	)""")
 
 def setup_authors():
@@ -81,6 +85,9 @@ def setup_indexes():
 	glc.execute_db_command("""CREATE UNIQUE INDEX ar_t_unique_skey ON article_tags (article_id, tag_id)""")
 	glc.execute_db_command("""CREATE INDEX token_skey ON tokens (token)""")
 
+def setup_constraints():
+	glc.execute_db_command("""ALTER TABLE articles ADD CONSTRAINT check_fake_types CHECK (fake_type IN ('bs', 'conspiracy', 'satire', 'hate', 'fake', 'state', 'junksci', 'bias', 'NO_CLASS'))""")
+
 @glc.new_connection(primary = True, pass_to_function = False)
 def main():
 	setup_sources()
@@ -90,6 +97,7 @@ def main():
 	setup_tokens()
 	setup_linking_tables()
 	setup_indexes()
+	setup_constraints()
 
 if __name__ == "__main__":
 	main()
