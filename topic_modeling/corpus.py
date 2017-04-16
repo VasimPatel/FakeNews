@@ -3,7 +3,7 @@ from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 from gensim import corpora, models, similarities
 import gensim
-
+MODEL_DIR = "topic_modeling/models/"
 def lda(articles, nameScheme = "test"):
 	tokenizer = RegexpTokenizer(r'\w+')
 
@@ -47,18 +47,18 @@ def lda(articles, nameScheme = "test"):
 	ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=9, id2word = dictionary, alpha=2, passes=20)
 
 	#save dictionary corpus and ldamodel to be used later
-	dictionary.save(nameScheme + "_dictionary.dict")
+	dictionary.save(MODEL_DIR + nameScheme + "_dictionary.dict")
 
-	corpora.MmCorpus.serialize(nameScheme + '_corpus.mm', corpus)
+	corpora.MmCorpus.serialize(MODEL_DIR + nameScheme + '_corpus.mm', corpus)
 
-	ldamodel.save(nameScheme + "_lda.lda")
+	ldamodel.save(MODEL_DIR + nameScheme + "_lda.lda")
 
 	#load saved docs for consistency and return
-	dictionary = corpora.Dictionary.load(nameScheme + "_dictionary.dict")
+	dictionary = corpora.Dictionary.load(MODEL_DIR + nameScheme + "_dictionary.dict")
 
-	lda = models.LdaModel.load(nameScheme + "_lda.lda")
+	lda = models.LdaModel.load(MODEL_DIR + nameScheme + "_lda.lda")
 
-	corpus = corpora.MmCorpus(nameScheme + "_corpus.mm")
+	corpus = corpora.MmCorpus(MODEL_DIR + nameScheme + "_corpus.mm")
 
 	return lda, dictionary, corpus
 
@@ -118,16 +118,16 @@ def classify_article(article, lda, dictionary, corpus):
 
 
 
-def compare_article(article_lda, lda, dictionary, corpus):
+def compare_article(article_lda, name, lda, dictionary, corpus):
 
 	#convert all documents in corpus to lda space for similarity comparisons
 	index = similarities.MatrixSimilarity(lda[corpus])
 
 	#save for consistency
-	index.save("test_index.index")
+	index.save(MODEL_DIR + name + "_index.index")
 
 	#load for consistency
-	index = similarities.MatrixSimilarity.load("test_index.index")
+	index = similarities.MatrixSimilarity.load(MODEL_DIR + name + "_index.index")
 
 	# computes cosine similarity between article and all other articles
 	sims = index[article_lda]

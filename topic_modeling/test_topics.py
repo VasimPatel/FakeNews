@@ -18,7 +18,7 @@ def main():
 	vec_lda = classify_article(convert(articles[4]['content']), model, dictionary, corpus)
 
 	#get sorted list of similar articles
-	sims = compare_article(vec_lda, model, dictionary, corpus)
+	sims = compare_article(vec_lda,  "test", model, dictionary, corpus)
 
 
 	#-------------------------------------------------------------------------------
