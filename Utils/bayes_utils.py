@@ -2,13 +2,15 @@
 # @Date:   2017-03-29 14:47:11
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-04-13 10:21:36
+# @Last modified time: 2017-04-16 14:27:49
 
 import Utils.settings as settings
 settings.init()
 
+import os
 import math
 import datetime
+import pickle
 from psycopg2.extras import execute_values
 from unidecode import unidecode
 from nltk import word_tokenize
@@ -29,15 +31,41 @@ def tokenize_article(article):
 	# Return article tokens
 	return tokens
 
-def article_tokens_to_db(article):
-	for token in tokenize_article(article):
-		glc.execute_db_values_command("""INSERT INTO tokens (token) VALUES (%s) ON CONFLICT ON CONSTRAINT tokens_token_key DO NOTHING""", (token,))
-
 @glc.new_connection(primary = True, pass_to_function = True)
 def build_token_table(connection, cursor):
-	articles = glc.execute_db_query("""SELECT content FROM articles""")
+	glc.execute_db_command("""PREPARE token_insert AS INSERT INTO tokens (token) VALUES ($1) ON CONFLICT DO NOTHING""")
 
-	utils.loop_display_progress(articles, article_tokens_to_db)
+	tokens = []
+	if os.path.isfile("tokens_backup"):
+		print("Loading token list from backup...")
+		with open("tokens_backup", "rb") as token_backup:
+			tokens = pickle.load(token_backup)
+	else:
+		articles = glc.execute_db_query("""SELECT content FROM articles""")
+
+		print("Building token list from articles...")
+		# Store last display time
+		lpd_time = datetime.datetime.now()
+		# Tokenize all articles
+		for i in range(0, len(articles)):
+			# Tokenize article and add tokens to list
+			tokens.extend(tokenize_article(articles[i]))
+			# Remove duplicates from token list
+			tokens = list(set(tokens))
+			# Display only updates after at least 1 second has passed
+			if (datetime.datetime.now() - lpd_time) > datetime.timedelta(seconds = 1):
+				# Display progress bar
+				utils.progress_bar(50, i+1, len(articles))
+				# Update the last progress display time
+				lpd_time = datetime.datetime.now()
+		print()
+
+		with open("tokens_backup", "wb") as token_backup:
+			pickle.dump(tokens, token_backup)
+
+	tokens = [(token,) for token in tokens]
+	print("Writing %d tokens to database..." % len(tokens))
+	cursor.executemany("""EXECUTE token_insert (%s)""", tokens)
 
 def build_nltk_training_list(articles):
 	training_list = []

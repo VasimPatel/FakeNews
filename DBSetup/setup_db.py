@@ -1,7 +1,7 @@
 # @Author: DivineEnder <DivineHP>
 # @Date:   2017-03-04 23:27:36
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-04-10 00:41:34
+# @Last modified time: 2017-04-15 16:06:28
 
 import Utils.settings as settings
 settings.init()
@@ -59,7 +59,7 @@ def setup_tags():
 def setup_tokens():
 	glc.execute_db_command("""CREATE TABLE tokens (
 		token_id serial UNIQUE PRIMARY KEY,
-		token varchar(50) UNIQUE
+		token text UNIQUE
 	)""")
 
 def setup_indexes():
