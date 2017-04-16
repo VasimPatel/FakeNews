@@ -1,7 +1,7 @@
 # @Author: DivineEnder <DivineHP>
 # @Date:   2017-03-04 23:27:36
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-04-15 16:06:28
+# @Last modified time: 2017-04-16 14:43:01
 
 import Utils.settings as settings
 settings.init()
@@ -22,7 +22,7 @@ def setup_articles():
 		article_id serial UNIQUE PRIMARY KEY,
 		title varchar(512) NOT NULL,
 		url varchar(512) NOT NULL,
-		created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+		publish_date TIMESTAMP WITH TIME ZONE NOT NULL,
 		content text NOT NULL,
 		source_id integer NOT NULL REFERENCES sources on DELETE RESTRICT
 	)""")
