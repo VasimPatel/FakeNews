@@ -1,4 +1,0 @@
-0.012*"trump" + 0.011*"said" + 0.009*"clinton" + 0.006*"campaign" + 0.005*"people" + 0.005*"one" + 0.005*"new" + 0.004*"would" + 0.004*"state" + 0.004*"also"
-0.009*"trump" + 0.008*"said" + 0.006*"clinton" + 0.006*"new" + 0.005*"state" + 0.004*"news" + 0.004*"would" + 0.004*"election" + 0.003*"one" + 0.003*"also"
-0.016*"clinton" + 0.011*"said" + 0.011*"trump" + 0.009*"percent" + 0.007*"state" + 0.005*"voters" + 0.004*"new" + 0.004*"one" + 0.004*"hillary" + 0.004*"campaign"
-0.009*"said" + 0.008*"trump" + 0.004*"election" + 0.004*"vote" + 0.004*"one" + 0.003*"would" + 0.003*"state" + 0.003*"also" + 0.003*"county" + 0.003*"percent"

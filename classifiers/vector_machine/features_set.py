@@ -14,15 +14,7 @@ class Features:
 	def get_features(self, article):
 		feature_vector = {}
 		for feature in self.feature_list:
-			feature_mod = importlib.import_module("svm.features." + feature)
+			feature_mod = importlib.import_module("classifiers.features." + feature)
 			feature_vector[feature] = feature_mod.get(article)
 
 		return feature_vector
-
-@glc.new_connection(primary = True, pass_to_function = False)
-def main():
-	test = Features()
-
-	articles = glc.execute_db_query("""SELECT * FROM articles""")
-	for article in articles:
-		print(test.get_features(article))
