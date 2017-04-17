@@ -2,7 +2,7 @@
 # @Date:   2017-03-08 13:49:12
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-04-15 16:07:02
+# @Last modified time: 2017-04-16 16:07:27
 
 import Utils.settings as settings
 settings.init()
@@ -15,10 +15,36 @@ import Utils.edit_db_utils as edit
 import Utils.get_db_utils as db
 
 import sys
+import csv
 import json
 import datetime
 import dateutil.parser as parser
 from unidecode import unidecode
+
+def update_field_limit():
+	maxInt = sys.maxsize
+	decrement = True
+
+	while decrement:
+	    # decrease the maxInt value by factor 10
+	    # as long as the OverflowError occurs.
+
+	    decrement = False
+	    try:
+	        csv.field_size_limit(maxInt)
+	    except OverflowError:
+	        maxInt = int(maxInt/10)
+	        decrement = True
+
+def read_csv_data(filename):
+	update_field_limit()
+	articles = []
+
+	with open(filename, encoding = "utf-8") as csvfile:
+		reader = csv.DictReader(csvfile)
+		articles = [row for row in reader]
+
+	return articles
 
 # Read the data from the json file
 def read_json_data(filename):
@@ -133,7 +159,10 @@ def main():
 	# add_source_data_to_db(read_json_data("data/bb_data.json"), "BreitBart")
 	# add_source_data_to_db(read_json_data("data/politico_data.json"), "Politico")
 	# glc.execute_db_command("""ALTER TABLE tokens ALTER COLUMN token TYPE text""")
-	bu.build_token_table()
+	# bu.build_token_table()
+	articles = read_csv_data("data/fake.csv")
+	source_urls = list(set(map(lambda article: article["site_url"], articles)))
+	print(source_urls)
 
 if __name__ == "__main__":
 	main()

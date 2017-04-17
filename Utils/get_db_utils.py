@@ -2,7 +2,7 @@
 # @Date:   2017-03-08 12:27:35
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-04-04 18:56:44
+# @Last modified time: 2017-04-16 15:54:36
 
 import Utils.connection_utils as glc
 
@@ -23,6 +23,12 @@ def get_sources_named(names, cursor = None):
 
 def get_source_named(name, cursor = None):
 	return get_sources_named([name], cursor = cursor)[0]
+
+def get_sources_linked(base_urls, cursor = None):
+	return glc.execute_db_query("""SELECT * FROM sources WHERE base_url = ANY(%s)""", (base_urls,), cursor = cursor)
+
+def get_source_linked(base_url, cursor = None):
+	return get_sources_linked([base_url], cursor = cursor)[0]
 # -----------
 # | Sources |
 # -----------
@@ -47,6 +53,9 @@ def get_article_linked(url, cursor = None):
 
 def get_articles_entitled(title, cursor = None):
 	return glc.execute_db_query("""SELECT * FROM articles WHERE title = %s""", (title,), cursor = cursor)
+
+def get_fake_articles(cursor = None):
+	return glc.execute_db_query("""SELECT * FROM articles WHERE is_fake = TRUE""", cursor = cursor)
 # ------------
 # | Articles |
 # ------------
