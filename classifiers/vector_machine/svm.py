@@ -32,6 +32,7 @@ class SVM:
 		self.clf.fit(self.X_train, self.y_train)
 		self.clf_fit = 1
 
+
 	def add_batch(self, head, target):
 		self.data = head
 		self.targets = target
@@ -48,8 +49,9 @@ class SVM:
 		if len(self.data) == 0 or len(self.targets) == 0:
 			print("There is no data to split.")
 			return
-
-		self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.data, self.targets, test_size = size, random_state = random)
+		head = np.array(self.data)
+		target = np.array(self.targets)
+		self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(head, target, test_size = size, random_state = random)
 
 
 
@@ -60,15 +62,15 @@ class SVM:
 
 		y_pred = self.clf.predict(self.X_test)
 
-		print("Classifier Accuracy: " + str(metrics.accuracy_score(self.y_test, y_pred)))
+		return metrics.accuracy_score(self.y_test, y_pred)
 
 
 
-	def predict_article(self, article):
+	def predict_article(self, head):
 		if self.clf_fit == 0:
 			print('Support Vector Machine is not fit')
 			return
 
-		return self.clf.predict(article)
+		return self.clf.predict(head)
 
 
