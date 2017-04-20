@@ -23,6 +23,7 @@ def lda(articles, nameScheme = "test"):
 	# loop through document list
 	for i in doc_set:
 	    
+	    i = convert(i['content'])
 	    # clean and tokenize document string
 	    raw = i.lower()
 	    tokens = tokenizer.tokenize(raw)
@@ -65,12 +66,16 @@ def lda(articles, nameScheme = "test"):
 
 
 
-def get_topic_distr(article, article_id, lda, dictionary, corpus):
+def get_topic_distr(article, lda, dictionary, corpus):
+
+	article_content = convert(article['content'])
+	article_id = article['article_id']
+	
 	#convert article text to bow
-	vec_bow = dictionary.doc2bow(article.split())
+	vec_bow = dictionary.doc2bow(article_content.split())
 
 	#calculate topic distribution for article
-	topic_distr = lda.get_document_topics(vec_bow)
+	topic_distr = lda.get_document_topics(vec_bow, minimum_probability=0)
 	
 	return topic_distr, article_id
 

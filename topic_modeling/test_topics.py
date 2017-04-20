@@ -23,7 +23,7 @@ def main():
 
 	#-------------------------------------------------------------------------------
 	#get topic distribution for an article
-	topic_dis, article_id = get_topic_distr(convert(articles[3]['content']), articles[3]['article_id'], model, dictionary, corpus)
+	topic_dis, article_id = get_topic_distr(articles[3] model, dictionary, corpus)
 
 	#get most likely topic assigned to article
 	max_distr = get_max_distr(topic_dis)

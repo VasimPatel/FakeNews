@@ -1,2 +1,2 @@
 def get(article):
-	return article['source_id']
+	return float(article['source_id'])
