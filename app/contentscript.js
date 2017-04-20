@@ -1,5 +1,6 @@
 
-chrome.runtime.sendMessage("Time to add labels!", function(promise) {
+chrome.runtime.sendMessage({type: "addLabels"}, function(promise) {
+		//alert(promise['request']);
 		var sections= document.querySelectorAll('a, article, img, span');
 
 		for (var i=0, length = sections.length; i < length; i++) {
@@ -7,8 +8,11 @@ chrome.runtime.sendMessage("Time to add labels!", function(promise) {
 			var text = document.createTextNode("Valid?");
 			label.appendChild(text);
 
-			label.onmouseover = function() {
-				alert("Classification Details Can Go Here!!");
+			label.onclick = function() {
+				alert("posting");
+				chrome.runtime.sendMessage({type: "sendData", data: "Something Creative"}, function(promise) {
+					alert(promise);
+				})
 			}
 
 			if(sections[i].innerText.split(" ").length != 0) {
@@ -22,4 +26,8 @@ chrome.runtime.sendMessage("Time to add labels!", function(promise) {
 		}
 
 });
+
+var handle_classification = function(response) {
+	alert(response);
+}
 
