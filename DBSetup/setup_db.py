@@ -1,7 +1,7 @@
 # @Author: DivineEnder <DivineHP>
 # @Date:   2017-03-04 23:27:36
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-04-16 15:41:40
+# @Last modified time: 2017-04-19 20:53:43 
 
 import Utils.settings as settings
 settings.init()
@@ -22,10 +22,10 @@ def setup_articles():
 	glc.execute_db_command("""CREATE TABLE articles (
 		article_id serial UNIQUE PRIMARY KEY,
 		title varchar(512) NOT NULL,
-		url varchar(512) NOT NULL,
-		publish_date TIMESTAMP WITH TIME ZONE NOT NULL,
+		url varchar(512),
+		publish_date DATE NOT NULL,
 		content text NOT NULL,
-		main_img_url varchar(1024) UNIQUE,
+		main_img_url varchar(1024),
 		source_id integer NOT NULL REFERENCES sources on DELETE RESTRICT,
 		is_fake boolean,
 		fake_type varchar(25) NOT NULL DEFAULT 'NO_CLASS'
@@ -35,7 +35,8 @@ def setup_authors():
 	glc.execute_db_command("""CREATE TABLE authors (
 		author_id serial UNIQUE PRIMARY KEY,
 		first_name varchar(50) NOT NULL,
-		last_name varchar(50) NOT NULL
+		middle_name varchar(100),
+		last_name varchar(50)
 	)""")
 
 def setup_linking_tables():
@@ -87,6 +88,8 @@ def setup_indexes():
 
 def setup_constraints():
 	glc.execute_db_command("""ALTER TABLE articles ADD CONSTRAINT check_fake_types CHECK (fake_type IN ('bs', 'conspiracy', 'satire', 'hate', 'fake', 'state', 'junksci', 'bias', 'NO_CLASS'))""")
+	glc.execute_db_command("""ALTER TABLE articles ADD CONSTRAINT unique_articles UNIQUE (title, publish_date, source_id)""")
+	glc.execute_db_command("""ALTER TABLE authors ADD CONSTRAINT unique_authors UNIQUE (first_name, last_name)""")
 
 @glc.new_connection(primary = True, pass_to_function = False)
 def main():

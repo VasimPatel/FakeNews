@@ -2,7 +2,7 @@
 # @Date:   2017-03-08 13:49:12
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-04-16 16:07:27
+# @Last modified time: 2017-04-19 20:54:36 
 
 import Utils.settings as settings
 settings.init()
@@ -26,15 +26,11 @@ def update_field_limit():
 	decrement = True
 
 	while decrement:
-	    # decrease the maxInt value by factor 10
-	    # as long as the OverflowError occurs.
-
-	    decrement = False
-	    try:
-	        csv.field_size_limit(maxInt)
-	    except OverflowError:
-	        maxInt = int(maxInt/10)
-	        decrement = True
+		try:
+			csv.field_size_limit(maxInt)
+			decrement = False
+		except OverflowError:
+			maxInt = int(maxInt/10)
 
 def read_csv_data(filename):
 	update_field_limit()
@@ -130,6 +126,30 @@ def add_json_article_to_db(article, source_name, VERBOSE = False):
 	elif VERBOSE:
 		print("Article '%s' is already in the database." % article["title"])
 
+def add_csv_article_to_db(article, VERBOSE = False):
+	source_id = edit.add_source(name = article["site_url"].split(".")[0], base_url = article["site_url"])
+
+	author_names = article["author"].split(" ")
+	author_first_name = unidecode(author_names[0])
+	author_last_name = unidecode(author_names[-1])
+	author_middle_name = unidecode(str(author_names[1:-1]).strip("[]").replace(",", "").replace("'", ""))
+	author_id = edit.add_author(first_name = author_first_name,
+		last_name = author_last_name,
+		middle_name = author_middle_name)
+
+	main_img_url = article["main_img_url"]
+	if not main_img_url:
+		main_img_url = None
+
+	edit.add_article(title = article["title"],
+		publish_date = parser.parse(article["published"]),
+		content = article["text"],
+		main_img_url = main_img_url,
+		is_fake = True,
+		fake_type = article["type"],
+		author_ids = [author_id],
+		source_id = source_id)
+
 # Add all the source data to the database (tracks and prints progress to console)
 def add_source_data_to_db(source_data, source_name):
 	# Add source to database
@@ -154,15 +174,17 @@ def add_source_data_to_db(source_data, source_name):
 
 	print("\nFinished adding %d articles from %s to the database." % (len(source_data), source_name))
 
-# @glc.new_connection(primary = True, pass_to_function = False)
+def add_csv_data_to_db(filename):
+	articles = read_csv_data(filename)
+	utils.loop_display_progress(articles, add_csv_article_to_db)
+
+@glc.new_connection(primary = True, pass_to_function = False)
 def main():
 	# add_source_data_to_db(read_json_data("data/bb_data.json"), "BreitBart")
 	# add_source_data_to_db(read_json_data("data/politico_data.json"), "Politico")
 	# glc.execute_db_command("""ALTER TABLE tokens ALTER COLUMN token TYPE text""")
 	# bu.build_token_table()
-	articles = read_csv_data("data/fake.csv")
-	source_urls = list(set(map(lambda article: article["site_url"], articles)))
-	print(source_urls)
+	add_csv_data_to_db("data/fake.csv")
 
 if __name__ == "__main__":
 	main()
