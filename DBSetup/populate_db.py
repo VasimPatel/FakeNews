@@ -2,10 +2,7 @@
 # @Date:   2017-03-08 13:49:12
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-04-19 20:54:36 
-
-import Utils.settings as settings
-settings.init()
+# @Last modified time: 2017-04-19 20:54:36
 
 import os
 import Utils.bayes_utils as bu
@@ -182,9 +179,8 @@ def add_csv_data_to_db(filename):
 def main():
 	# add_source_data_to_db(read_json_data("data/bb_data.json"), "BreitBart")
 	# add_source_data_to_db(read_json_data("data/politico_data.json"), "Politico")
-	# glc.execute_db_command("""ALTER TABLE tokens ALTER COLUMN token TYPE text""")
+	# add_csv_data_to_db("data/fake.csv")
 	# bu.build_token_table()
-	add_csv_data_to_db("data/fake.csv")
 
 if __name__ == "__main__":
 	main()

@@ -3,12 +3,8 @@
 # @Last modified by:   DivineEnder
 # @Last modified time: 2017-04-20 00:11:16
 
-import Utils.settings as settings
-settings.init()
-
 # Import required modules
 import os
-import Utils.db_utils as db_utils
 import Utils.connection_utils as glc
 
 def setup_sources():

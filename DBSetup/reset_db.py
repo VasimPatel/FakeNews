@@ -4,13 +4,9 @@
 # @Last modified by:   DivineEnder
 # @Last modified time: 2017-03-20 20:09:58
 
-import Utils.settings as settings
-settings.init()
-
 # Import required modules
 import os
 import Utils.connection_utils as glc
-import Utils.db_utils as db_utils
 
 @glc.new_connection(primary = True)
 def main(conn, cursor):
