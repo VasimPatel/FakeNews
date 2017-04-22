@@ -2,10 +2,7 @@
 # @Date:   2017-03-08 13:49:12
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-04-22 15:37:53
-
-import Utils.settings as settings
-settings.init()
+# @Last modified time: 2017-04-22 15:41:30
 
 import os
 import Utils.bayes_utils as bu
