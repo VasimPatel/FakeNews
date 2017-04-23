@@ -30,6 +30,7 @@ class SVM:
 			print("Support Vector Machine is not set")
 			return
 
+		
 		self.clf.fit(self.X_train, self.y_train)
 		self.clf_fit = 1
 

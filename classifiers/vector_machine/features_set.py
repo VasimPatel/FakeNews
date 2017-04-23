@@ -11,6 +11,12 @@ from topic_modeling.corpus import lda, classify_article, get_topic_distr, compar
 import random
 class Features:
 	def __init__(self):
+		#######
+		# To add feature: 
+		# 1. create file in classifiers/features which collects the feature for an article object and returns
+		# 2. add filename to self.feature_list
+		# 3. you are good to go
+		#######
 		self.feature_list = ['ReadingLevel','LexiDiversity']
 		self.num_topics = 0
 		self.clusters = None

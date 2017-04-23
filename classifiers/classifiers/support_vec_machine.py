@@ -126,15 +126,13 @@ def main():
 	articles = articles + real_a
 
 	random.shuffle(articles)
-	#machine.query_articles(query_real)
-	#machine.query_articles(query_fake)
+	
 	sys.stdout.write("done queries...")
 	sys.stdout.flush()
 
-	#machine.preprocess_data()
-	#sys.stdout.write("done preprocessing..")
 	machine.set_articles(articles[:100])
 
+	#construct our lda. comment out if you want
 	machine.construct_lda(load=True,num_t=15)
 	sys.stdout.write("done lda construction...")
 	sys.stdout.flush()
