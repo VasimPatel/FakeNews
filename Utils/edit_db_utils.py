@@ -2,7 +2,7 @@
 # @Date:   2017-03-08 12:27:22
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-04-19 20:51:21 
+# @Last modified time: 2017-04-22 15:36:37
 
 from unidecode import unidecode
 
@@ -167,7 +167,7 @@ def add_tag(name, article_ids = None, connection = None, cursor = None, VERBOSE 
 
 	# Insert the Tag into the database
 	tag_id = glc.execute_db_values_command("""INSERT INTO tags (tag_name) VALUES (%s)
-		ON CONFLICT (tag_name) DO NOTHING""", (name,), returns = "tag_id", connection = connection, cursor = cursor)["tag_id"]
+		ON CONFLICT (tag_name) DO UPDATE SET tag_name = EXCLUDED.tag_name""", (name,), returns = "tag_id", connection = connection, cursor = cursor)["tag_id"]
 
 	# Check to make sure that the authors referenced are already in the database
 	if not article_ids is None:
