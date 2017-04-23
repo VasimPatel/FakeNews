@@ -4,62 +4,67 @@ from nltk.stem.porter import PorterStemmer
 from gensim import corpora, models, similarities
 import gensim
 MODEL_DIR = "topic_modeling/models/"
-def lda(articles, nameScheme = "test"):
-	tokenizer = RegexpTokenizer(r'\w+')
+def lda(articles, num_t=10, nameScheme = "test", load=True):
+	if load != True:
+		tokenizer = RegexpTokenizer(r'\w+')
 
-	# create English stop words list
-	en_stop = stopwords.words('english')
+		# create English stop words list
+		en_stop = stopwords.words('english')
 
-	# Create p_stemmer of class PorterStemmer
-	p_stemmer = PorterStemmer()
-	    
+		# Create p_stemmer of class PorterStemmer
+		p_stemmer = PorterStemmer()
+		    
 
-	# compile sample documents into a list
-	doc_set = articles
+		# compile sample documents into a list
+		doc_set = articles
 
-	# list for tokenized documents in loop
-	texts = []
+		# list for tokenized documents in loop
+		texts = []
 
-	# loop through document list
-	for i in doc_set:
-	    
-	    i = convert(i['content'])
-	    # clean and tokenize document string
-	    raw = i.lower()
-	    tokens = tokenizer.tokenize(raw)
+		# loop through document list
+		for i in doc_set:
+		    
+		    i = convert(i['content'])
+		    # clean and tokenize document string
+		    raw = i.lower()
+		    tokens = tokenizer.tokenize(raw)
 
-	    # remove stop words from tokens
-	    stopped_tokens = [i for i in tokens if not i in en_stop]
-	    
-	    # stem tokens
-	    stemmed_tokens = [p_stemmer.stem(i) for i in stopped_tokens]
-	    
-	    # add tokens to list
-	    texts.append(stemmed_tokens)
+		    # remove stop words from tokens
+		    stopped_tokens = [i for i in tokens if not i in en_stop]
+		    
+		    # stem tokens
+		    stemmed_tokens = [p_stemmer.stem(i) for i in stopped_tokens]
+		    
+		    # add tokens to list
+		    texts.append(stemmed_tokens)
 
-	# turn our tokenized documents into a id <-> term dictionary
-	dictionary = corpora.Dictionary(texts)
+		# turn our tokenized documents into a id <-> term dictionary
+		dictionary = corpora.Dictionary(texts)
 
-	    
-	# convert tokenized documents into a document-term matrix
-	corpus = [dictionary.doc2bow(text) for text in texts]
+		    
+		# convert tokenized documents into a document-term matrix
+		corpus = [dictionary.doc2bow(text) for text in texts]
 
-	# generate LDA model
-	ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=9, id2word = dictionary, alpha=2, passes=20)
+		# generate LDA model
+		ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=num_t, id2word = dictionary, alpha=2, passes=20)
 
-	#save dictionary corpus and ldamodel to be used later
-	dictionary.save(MODEL_DIR + nameScheme + "_dictionary.dict")
+		#save dictionary corpus and ldamodel to be used later
+		dictionary.save(MODEL_DIR + nameScheme + "_dictionary.dict")
 
-	corpora.MmCorpus.serialize(MODEL_DIR + nameScheme + '_corpus.mm', corpus)
+		corpora.MmCorpus.serialize(MODEL_DIR + nameScheme + '_corpus.mm', corpus)
 
-	ldamodel.save(MODEL_DIR + nameScheme + "_lda.lda")
+		ldamodel.save(MODEL_DIR + nameScheme + "_lda.lda")
 
-	#load saved docs for consistency and return
-	dictionary = corpora.Dictionary.load(MODEL_DIR + nameScheme + "_dictionary.dict")
+		#load saved docs for consistency and return
+		dictionary = corpora.Dictionary.load(MODEL_DIR + nameScheme + "_dictionary.dict")
 
-	lda = models.LdaModel.load(MODEL_DIR + nameScheme + "_lda.lda")
+		lda = models.LdaModel.load(MODEL_DIR + nameScheme + "_lda.lda")
 
-	corpus = corpora.MmCorpus(MODEL_DIR + nameScheme + "_corpus.mm")
+		corpus = corpora.MmCorpus(MODEL_DIR + nameScheme + "_corpus.mm")
+	else:
+		lda = models.LdaModel.load(MODEL_DIR + nameScheme + "_lda.lda")
+		corpus = corpora.MmCorpus(MODEL_DIR + nameScheme + "_corpus.mm")
+		dictionary = corpora.Dictionary.load(MODEL_DIR + nameScheme + "_dictionary.dict")
 
 	return lda, dictionary, corpus
 
@@ -92,11 +97,9 @@ def cluster_articles(articles, lda, dictionary, corpus):
 	article_table = {}
 
 	for article in articles:
-		content = convert(article['content'])
-		article_id = article['article_id']
 
 		#get topic distribution for an article
-		topic_dis, article_id = get_topic_distr(content, article_id, lda, dictionary, corpus)
+		topic_dis, article_id = get_topic_distr(article, lda, dictionary, corpus)
 
 		#get most likely topic assigned to article
 		max_distr = get_max_distr(topic_dis)
@@ -113,7 +116,7 @@ def cluster_articles(articles, lda, dictionary, corpus):
 
 def classify_article(article, lda, dictionary, corpus):
 	#convert article text to bow
-	vec_bow = dictionary.doc2bow(article.split())
+	vec_bow = dictionary.doc2bow(convert(article['content']).split())
 
 	#convert query to lda space for similarity comparison
 	vec_lda = lda[vec_bow]
@@ -123,7 +126,7 @@ def classify_article(article, lda, dictionary, corpus):
 
 
 
-def compare_article(article_lda, name, lda, dictionary, corpus):
+def compare_article(article_lda, lda, dictionary, corpus, name="test"):
 
 	#convert all documents in corpus to lda space for similarity comparisons
 	index = similarities.MatrixSimilarity(lda[corpus])
@@ -143,6 +146,13 @@ def compare_article(article_lda, name, lda, dictionary, corpus):
 	return sims
 
 
+
+def get_topic_words(lda, nmost):
+	topic_words = []
+	for words in lda.show_topics(num_words=nmost):
+		topic_words.append(words)
+
+	return topic_words
 
 def convert(article):
 	return article.encode('ascii', errors='ignore').decode('utf-8').replace("\ ", '')
