@@ -12,12 +12,12 @@ import random
 class Features:
 	def __init__(self):
 		#######
-		# To add feature: 
+		# To add feature:
 		# 1. create file in classifiers/features which collects the feature for an article object and returns
 		# 2. add filename to self.feature_list
 		# 3. you are good to go
 		#######
-		self.feature_list = ['ReadingLevel','LexiDiversity']
+		self.feature_list = ['ReadingLevel', 'HeadlineSentiment', 'contentSentiment']
 		self.num_topics = 0
 		self.clusters = None
 
@@ -60,7 +60,7 @@ class Features:
 			num_articles = len(self.clusters[max_distr[0]])
 			feature_vector.append(num_articles)
 			feature_vector.append(max_distr[1])
-		
+
 		return feature_vector
 
 	def set_clusters(self, articles, lda, dictionary, corpus):
@@ -76,8 +76,5 @@ class Features:
 		f_c = self.feature_list
 		for i in range(0,self.num_topics):
 			f_c.append("Topic_" + str(i))
-		
+
 		return f_c
-
-			
-

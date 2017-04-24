@@ -116,17 +116,21 @@ def main():
 	machine = SupportVectorMachine()
 
 	#add articles to machine
-	query_fake = "SELECT * FROM articles where is_fake=True LIMIT 100"
-	query_real = "SELECT * From articles where is_fake is NULL limit 100"
+	query_fake = "SELECT * FROM articles where is_fake=True LIMIT 10000"
+	query_real = "SELECT * From articles where source_id=22236 limit 10000"
 
 	fake_a = query(query_fake)
 	real_a = query(query_real)
+
+	fake_a = random.sample(fake_a, 100)
+	real_a = random.sample(real_a, 100)
+
 	articles = []
 	articles = articles + fake_a
 	articles = articles + real_a
 
 	random.shuffle(articles)
-	
+
 	sys.stdout.write("done queries...")
 	sys.stdout.flush()
 
