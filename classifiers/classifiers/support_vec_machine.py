@@ -111,8 +111,8 @@ def main():
 	machine = SupportVectorMachine()
 
 	#add articles to machine
-	query_fake = "SELECT * FROM articles where is_fake=True LIMIT 1000"
-	query_real = "SELECT * From articles where source_id=22236 limit 1000"
+	query_fake = "SELECT * FROM articles where is_fake=True order by random() LIMIT 1000"
+	query_real = "SELECT * From articles where source_id=22236 order by random() limit 1000"
 
 	fake_a = query(query_fake)
 	real_a = query(query_real)
@@ -153,9 +153,9 @@ def main():
 	y_true, y_pred = machine.svm.y_test, machine.svm.clf.predict(machine.svm.X_test)
 	print(classification_report(y_true, y_pred))
 
-
 '''
-	test_articles = articles[200:300]
+
+	test_articles = articles[700:750]
 	total = 0
 	correct=0
 	total_f = 0
@@ -207,6 +207,6 @@ def main():
 	print(machine.features_collected)
 	target_names = ['Fake', 'Real']
 
-	print(classification_report(class_true, class_pred, target_names=target_names))
-	print(confusion_matrix(class_true, class_pred))
+	#print(classification_report(class_true, class_pred, target_names=target_names))
+	#print(confusion_matrix(class_true, class_pred))
 '''
