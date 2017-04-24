@@ -59,8 +59,6 @@ class SupportVectorMachine:
 					self.svm.add_data(feature_set, target)
 				except Exception as e:
 					sys.stdout.write("Training for this article failed. \r")
-					sys.stdout.write(e)
-					sys.stdout.flush()
 					pass
 		self.features_collected = self.Fobj.get_features_collected()
 
@@ -111,8 +109,8 @@ def main():
 	machine = SupportVectorMachine()
 
 	#add articles to machine
-	query_fake = "SELECT * FROM articles where is_fake=True LIMIT 1000"
-	query_real = "SELECT * From articles where source_id=22236 limit 1000"
+	query_fake = "SELECT * FROM articles where is_fake=True order by random() LIMIT 1000"
+	query_real = "SELECT * From articles where source_id=22236 order by random() limit 1000"
 
 	fake_a = query(query_fake)
 	real_a = query(query_real)
