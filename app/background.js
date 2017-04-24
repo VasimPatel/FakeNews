@@ -5,7 +5,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	if (request.type == "addLabels")
 		sendResponse({request: "true"});
 	else if (request.type == "sendData" ){
-		sendResponse(xml);
+		sendResponse(request.data);
 	}
 });
 

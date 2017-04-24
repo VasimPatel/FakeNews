@@ -39,6 +39,7 @@ class Features:
 				num_topics += 1
 			self.num_topics = num_topics
 
+			'''
 			#----------------------------------------------------------------------------
 			#collect similar articles
 
@@ -52,7 +53,6 @@ class Features:
 				feature_vector.append(each[0])
 				feature_vector.append(each[1])
 
-
 			#----------------------------------------------------------------------------
 			#collect number of articles in most probable topic
 			#get most likely topic assigned to article
@@ -60,7 +60,7 @@ class Features:
 			num_articles = len(self.clusters[max_distr[0]])
 			feature_vector.append(num_articles)
 			feature_vector.append(max_distr[1])
-
+			'''
 		return feature_vector
 
 	def set_clusters(self, articles, lda, dictionary, corpus):
