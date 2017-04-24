@@ -17,7 +17,7 @@ class Features:
 		# 2. add filename to self.feature_list
 		# 3. you are good to go
 		#######
-		self.feature_list = ['ReadingLevel', 'HeadlineSentiment', 'contentSentiment']
+		self.feature_list = ['ReadingLevel', 'HeadlineSentiment']
 		self.num_topics = 0
 		self.clusters = None
 
