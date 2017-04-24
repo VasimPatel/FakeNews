@@ -12,12 +12,12 @@ import random
 class Features:
 	def __init__(self):
 		#######
-		# To add feature: 
+		# To add feature:
 		# 1. create file in classifiers/features which collects the feature for an article object and returns
 		# 2. add filename to self.feature_list
 		# 3. you are good to go
 		#######
-		self.feature_list = []
+		self.feature_list = ['ReadingLevel', 'HeadlineSentiment', 'contentSentiment']
 		self.num_topics = 0
 		self.clusters = None
 
@@ -38,7 +38,7 @@ class Features:
 				feature_vector.append(each_f[1])
 				num_topics += 1
 			self.num_topics = num_topics
-			
+
 			'''
 			#----------------------------------------------------------------------------
 			#collect similar articles
@@ -76,8 +76,5 @@ class Features:
 		f_c = self.feature_list
 		for i in range(0,self.num_topics):
 			f_c.append("Topic_" + str(i))
-		
+
 		return f_c
-
-			
-

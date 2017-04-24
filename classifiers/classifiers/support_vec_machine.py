@@ -45,7 +45,7 @@ class SupportVectorMachine:
 			i = 0
 			for each_article in self.articles:
 				progress = i / len(self.articles)
-				i = i + 1 
+				i = i + 1
 				sys.stdout.write("Feature Collection in Progress: {}%   \r".format(round(progress*100)) )
 				sys.stdout.flush()
 				try:
@@ -116,12 +116,16 @@ def main():
 
 	fake_a = query(query_fake)
 	real_a = query(query_real)
+
+	fake_a = random.sample(fake_a, 100)
+	real_a = random.sample(real_a, 100)
+
 	articles = []
 	articles = articles + fake_a
 	articles = articles + real_a
 
 	random.shuffle(articles)
-	
+
 	sys.stdout.write("done queries...")
 	sys.stdout.flush()
 
@@ -207,6 +211,4 @@ def main():
 	print(machine.features_collected)
 	target_names = ['Fake', 'Real']
 
-	#print(classification_report(class_true, class_pred, target_names=target_names))
-	#print(confusion_matrix(class_true, class_pred))
 '''
