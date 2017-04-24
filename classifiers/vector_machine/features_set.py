@@ -38,6 +38,7 @@ class Features:
 				feature_vector.append(each_f[1])
 				num_topics += 1
 			self.num_topics = num_topics
+			
 			'''
 			#----------------------------------------------------------------------------
 			#collect similar articles
@@ -51,7 +52,6 @@ class Features:
 			for each in sims[:20]:
 				feature_vector.append(each[0])
 				feature_vector.append(each[1])
-
 
 			#----------------------------------------------------------------------------
 			#collect number of articles in most probable topic

@@ -28,7 +28,7 @@ class SVM:
   			{'C': [1, 10, 100, 1000], 'kernel': ['linear']},
   			{'C': [1, 10, 100, 1000], 'gamma': [0.001, 0.0001], 'kernel': ['rbf']},
  			]
-		self.clf = GridSearchCV(svm.SVC(C=1), tuned_parameters, cv=5, verbose=5)
+		self.clf = GridSearchCV(svm.SVC(C=1), tuned_parameters, cv=5)
 		self.clf_set = 1
 
 

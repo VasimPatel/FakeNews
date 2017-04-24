@@ -46,7 +46,7 @@ class SupportVectorMachine:
 			for each_article in self.articles:
 				progress = i / len(self.articles)
 				i = i + 1 
-				sys.stdout.write("Feature Collection in Progress: {}%   \r".format(progress*100) )
+				sys.stdout.write("Feature Collection in Progress: {}%   \r".format(round(progress*100)) )
 				sys.stdout.flush()
 				try:
 					feature_set = self.Fobj.get_features(each_article, lda=self.lda, dictionary=self.dictionary, corpus = self.corpus)
@@ -125,10 +125,10 @@ def main():
 	sys.stdout.write("done queries...")
 	sys.stdout.flush()
 
-	machine.set_articles(articles[:200])
+	machine.set_articles(articles[:700])
 
 	#construct our lda. comment out if you want
-	machine.construct_lda(load=True,num_t=15)
+	machine.construct_lda(load=True,num_t=45)
 	sys.stdout.write("done lda construction...\n")
 	sys.stdout.flush()
 
@@ -138,7 +138,7 @@ def main():
 	sys.stdout.flush()
 
 	#train svm
-	machine.train_svm(12)
+	machine.train_svm(10)
 	sys.stdout.write("done training...")
 	sys.stdout.flush()
 
