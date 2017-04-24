@@ -155,9 +155,9 @@ def main():
 	y_true, y_pred = machine.svm.y_test, machine.svm.clf.predict(machine.svm.X_test)
 	print(classification_report(y_true, y_pred))
 
-
 '''
-	test_articles = articles[200:300]
+
+	test_articles = articles[700:750]
 	total = 0
 	correct=0
 	total_f = 0
@@ -209,6 +209,4 @@ def main():
 	print(machine.features_collected)
 	target_names = ['Fake', 'Real']
 
-	print(classification_report(class_true, class_pred, target_names=target_names))
-	print(confusion_matrix(class_true, class_pred))
 '''
