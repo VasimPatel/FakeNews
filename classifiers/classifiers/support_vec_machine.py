@@ -6,30 +6,16 @@ import random
 import sys
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.externals import joblib
+import traceback
 class SupportVectorMachine:
 	def __init__(self):
 		self.lda = None
 		self.dictionary = None
 		self.corpus = None
-		self.svm = SVM('linear')
+		self.svm = SVM()
 		self.articles = []
 		self.Fobj = features.Features()
 		self.features_collected = None
-
-	def preprocess_data(self):
-		for each_article in self.articles:
-			#print(type(each_article['content']))
-			if each_article == None:
-				self.articles.remove(each_article)
-				print("removed article because it was null!")
-			elif len(str(each_article['content'])) == 1:
-				self.articles.remove(each_article)
-				print("removed article because it had no content! Class: " + str(each_article['is_fake']))
-			elif len(str(each_article['source_id'])) == None:
-				self.articles.remove(each_article)
-				print("removed article because it had no source! Class: " + str(each_article['is_fake']))
-			else:
-				pass
 
 	def set_articles(self, articles):
 		self.articles = articles
@@ -56,7 +42,12 @@ class SupportVectorMachine:
 			print("No articles have been pulled or lda is not set!")
 			return 0
 		else:
+			i = 0
 			for each_article in self.articles:
+				progress = i / len(self.articles)
+				i = i + 1 
+				sys.stdout.write("Feature Collection in Progress: {}%   \r".format(progress*100) )
+				sys.stdout.flush()
 				try:
 					feature_set = self.Fobj.get_features(each_article, lda=self.lda, dictionary=self.dictionary, corpus = self.corpus)
 					target = each_article['is_fake']
@@ -66,7 +57,10 @@ class SupportVectorMachine:
 						target = 0
 					#target = random.randint(0,1)
 					self.svm.add_data(feature_set, target)
-				except:
+				except Exception as e:
+					sys.stdout.write("Training for this article failed. \r")
+					sys.stdout.write(e)
+					sys.stdout.flush()
 					pass
 		self.features_collected = self.Fobj.get_features_collected()
 
@@ -78,6 +72,7 @@ class SupportVectorMachine:
 		except Exception as e:
 			print("Could not train svm: ")
 			print("\tError: " + str(e))
+			traceback.print_exc()
 
 
 	def run_svm(self):
@@ -116,8 +111,8 @@ def main():
 	machine = SupportVectorMachine()
 
 	#add articles to machine
-	query_fake = "SELECT * FROM articles where is_fake=True LIMIT 100"
-	query_real = "SELECT * From articles where is_fake is NULL limit 100"
+	query_fake = "SELECT * FROM articles where is_fake=True LIMIT 1000"
+	query_real = "SELECT * From articles where source_id=22236 limit 1000"
 
 	fake_a = query(query_fake)
 	real_a = query(query_real)
@@ -130,16 +125,16 @@ def main():
 	sys.stdout.write("done queries...")
 	sys.stdout.flush()
 
-	machine.set_articles(articles[:100])
+	machine.set_articles(articles[:200])
 
 	#construct our lda. comment out if you want
 	machine.construct_lda(load=True,num_t=15)
-	sys.stdout.write("done lda construction...")
+	sys.stdout.write("done lda construction...\n")
 	sys.stdout.flush()
 
 	#get features for each article
 	machine.get_features()
-	sys.stdout.write("done feature collection...\n")
+	sys.stdout.write("done feature collection...\n\n")
 	sys.stdout.flush()
 
 	#train svm
@@ -148,14 +143,19 @@ def main():
 	sys.stdout.flush()
 
 	#run svm
-	result = machine.run_svm()
-	sys.stdout.write("done running...")
-	sys.stdout.flush()
+	#result = machine.run_svm()
+	#sys.stdout.write("done running...")
+	#sys.stdout.flush()
 
-	sys.stdout.write("\n\tClassifier Accuracy: " + str(result))
-	sys.stdout.flush()
+	#sys.stdout.write("\n\tClassifier Accuracy: " + str(result))
+	#sys.stdout.flush()
 
-	test_articles = articles[100:]
+	y_true, y_pred = machine.svm.y_test, machine.svm.clf.predict(machine.svm.X_test)
+	print(classification_report(y_true, y_pred))
+
+
+'''
+	test_articles = articles[200:300]
 	total = 0
 	correct=0
 	total_f = 0
@@ -209,3 +209,4 @@ def main():
 
 	print(classification_report(class_true, class_pred, target_names=target_names))
 	print(confusion_matrix(class_true, class_pred))
+'''

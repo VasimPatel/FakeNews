@@ -17,7 +17,7 @@ class Features:
 		# 2. add filename to self.feature_list
 		# 3. you are good to go
 		#######
-		self.feature_list = ['ReadingLevel','LexiDiversity']
+		self.feature_list = ['ReadingLevel']
 		self.num_topics = 0
 		self.clusters = None
 
@@ -38,7 +38,7 @@ class Features:
 				feature_vector.append(each_f[1])
 				num_topics += 1
 			self.num_topics = num_topics
-
+			'''
 			#----------------------------------------------------------------------------
 			#collect similar articles
 
@@ -60,7 +60,7 @@ class Features:
 			num_articles = len(self.clusters[max_distr[0]])
 			feature_vector.append(num_articles)
 			feature_vector.append(max_distr[1])
-		
+			'''
 		return feature_vector
 
 	def set_clusters(self, articles, lda, dictionary, corpus):
