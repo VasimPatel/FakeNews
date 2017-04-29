@@ -4,9 +4,6 @@
 # @Last modified by:   DivineEnder
 # @Last modified time: 2017-04-10 20:35:24
 
-from Utils import settings
-settings.init()
-
 import os
 from Utils import db_utils
 from Utils import connection_utils as glc
@@ -20,7 +17,7 @@ def main():
 	print("\nYou should now see a list of tables in the database...")
 	db_utils.list_all_db_tables()
 
-	print("\nEverything if everything seemed to print correctly you should be connected.")
+	print("\nIf everything seemed to print correctly you should be connected.")
 
 if __name__ == "__main__":
 	main()

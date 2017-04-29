@@ -7,4 +7,4 @@
 from textstat.textstat import textstat
 
 def get(article):
-	return textstat.text_standard(article['content'])
+	return textstat.flesch_kincaid_grade(article['content'])

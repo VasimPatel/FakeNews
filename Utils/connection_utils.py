@@ -159,7 +159,7 @@ def execute_as_database_query(func):
 # Executes the returned string and tuple of the function through the glc
 def execute_as_database_command(func):
 	@wraps(func)
-	def wrapper(*args, connection = None, cursor = None, **kwargs):
+	def wrapper(*args, returns = None, connection = None, cursor = None, **kwargs):
 		if connection is None:
 			connection = settings.primary_connection
 		if cursor is None:
@@ -167,19 +167,35 @@ def execute_as_database_command(func):
 
 		resp = func(*args, **kwargs)
 
+		# Set command string from function
 		command_string = resp[0]
+		# Set up returning columns
+		if not returns is None:
+			command_string = command_string + " RETURNING "
+			if isinstance(returns, list):
+				for return_col in returns:
+					command_string = command_string + return_col + " "
+			else:
+				command_string = command_string + returns
+		# Setup list of command variables
 		command_variables = resp[1]
+		# Execute command without variables
 		if command_variables is None:
 			cursor.execute(command_string)
+		# Execute command with variables
 		else:
 			cursor.execute(cursor.mogrify(command_string, command_variables))
 
 		connection.commit()
+
+		# Return fetched value if returning something
+		return None if returns is None else cursor.fetchone()
 	return wrapper
 
+# Executes the returned string and tuple of the function through the glc (passes variables as part of execute instead of in mogrify)
 def execute_as_database_values_command(func):
 	@wraps(func)
-	def wrapper(*args, connection = None, cursor = None, **kwargs):
+	def wrapper(*args, returns = None, connection = None, cursor = None, **kwargs):
 		if connection is None:
 			connection = settings.primary_connection
 		if cursor is None:
@@ -187,11 +203,25 @@ def execute_as_database_values_command(func):
 
 		resp = func(*args, **kwargs)
 
+		# Set command string from function
 		command_string = resp[0]
+		# Set up returning columns
+		if not returns is None:
+			command_string = command_string + " RETURNING "
+			if isinstance(returns, list):
+				for return_col in returns:
+					command_string = command_string + return_col + " "
+			else:
+				command_string = command_string + returns
+		# Setup list of command variables
 		command_variables = resp[1]
+		# Excute command
 		cursor.execute(command_string, command_variables)
 
 		connection.commit()
+
+		# Return fetched value if returning something
+		return None if returns is None else cursor.fetchone()
 	return wrapper
 
 # -----------------------

@@ -1,0 +1,1 @@
+document.write("F-ake Knews is active")

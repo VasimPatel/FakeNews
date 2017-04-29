@@ -2,10 +2,7 @@
 # @Date:   2017-03-08 13:49:12
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-04-15 16:07:02
-
-import Utils.settings as settings
-settings.init()
+# @Last modified time: 2017-04-22 15:41:30
 
 import os
 import Utils.bayes_utils as bu
@@ -15,13 +12,45 @@ import Utils.edit_db_utils as edit
 import Utils.get_db_utils as db
 
 import sys
+import csv
 import json
 import datetime
 import dateutil.parser as parser
 from unidecode import unidecode
 
+def update_field_limit():
+	maxInt = sys.maxsize
+	decrement = True
+
+	while decrement:
+		try:
+			csv.field_size_limit(maxInt)
+			decrement = False
+		except OverflowError:
+			maxInt = int(maxInt/10)
+
+def read_csv_data(filename):
+	update_field_limit()
+	articles = []
+
+	with open(filename, encoding = "utf-8") as csvfile:
+		reader = csv.DictReader(csvfile)
+		articles = [row for row in reader]
+
+	return articles
+
+def read_nytimes_data(folder):
+	articles = []
+	for (dirpath, dirnames, filenames) in os.walk(folder):
+		for filename in filenames:
+			with open(dirpath + "/" + filename) as data:
+				for line in data:
+					articles.append(json.loads(line.replace("\n", "")))
+
+	return articles
+
 # Read the data from the json file
-def read_json_data(filename):
+def read_json_data_manual(filename):
 	articles = []
 	# Map string currently building
 	article_dict_str = ""
@@ -72,68 +101,80 @@ def read_json_data(filename):
 
 # Add the article to the database
 def add_json_article_to_db(article, source_name, VERBOSE = False):
-	if db.get_article_linked(article["url"]) is None:
-		tag_ids = []
-		for tag in article["tags"]:
-			db_tag = db.get_tag_named(tag)
-			if not db_tag:
-				tag_ids.append(edit.add_tag(tag, VERBOSE = VERBOSE))
-			else:
-				tag_ids.append(db_tag['tag_id'])
-		tag_ids = list(set(tag_ids))
+	tag_ids = []
+	for tag in article["tags"]:
+		tag_id = edit.add_tag(tag, VERBOSE = VERBOSE)
+		tag_ids.append(tag_id)
+	tag_ids = list(set(tag_ids))
 
-		author_ids = []
-		for author in article["author"].split("|"):
-			names = author.split(" ")
-			if len(names) == 2:
-				db_author = db.get_author_named(names[0], names[1])
-				if not db_author:
-					author_ids.append(edit.add_author(names[0], names[1], VERBOSE = VERBOSE))
-				else:
-					author_ids.append(db_author['author_id'])
+	author_ids = []
+	for author in article["authors"]:
+		names = author.split(" ")
+		first_name = unidecode(names[0])
+		last_name = unidecode(names[-1])
+		middle_name = unidecode(str(names[1:-1]).strip("[]").replace(",", "").replace("'", ""))
+		if not middle_name:
+			middle_name = None
 
-		edit.add_article(article["title"],
-			article["url"],
-			parser.parse(article["date"]),
-			article["content"],
-			db.get_source_named(source_name)['source_id'],
-			author_ids,
-			tag_ids,
-			VERBOSE = VERBOSE
-		)
-	elif VERBOSE:
-		print("Article '%s' is already in the database." % article["title"])
+		author_id = edit.add_author(first_name, last_name, middle_name, VERBOSE = VERBOSE)
+		author_ids.append(author_id)
+	author_ids = list(set(author_ids))
+
+	edit.add_article(title = article["title"],
+		url = article["url"],
+		publish_date = parser.parse(article["date"]),
+		content = article["content"],
+		source_id = db.get_source_named(source_name)['source_id'],
+		is_fake = False,
+		author_ids = author_ids,
+		tag_ids = tag_ids,
+		VERBOSE = VERBOSE
+	)
+
+def add_csv_article_to_db(article, VERBOSE = False):
+	source_id = edit.add_source(name = article["site_url"].split(".")[0], base_url = article["site_url"])
+
+	author_names = article["author"].split(" ")
+	author_first_name = unidecode(author_names[0])
+	author_last_name = unidecode(author_names[-1])
+	author_middle_name = unidecode(str(author_names[1:-1]).strip("[]").replace(",", "").replace("'", ""))
+	author_id = edit.add_author(first_name = author_first_name,
+		last_name = author_last_name,
+		middle_name = author_middle_name)
+
+	main_img_url = article["main_img_url"]
+	if not main_img_url:
+		main_img_url = None
+
+	edit.add_article(title = article["title"],
+		publish_date = parser.parse(article["published"]),
+		content = article["text"],
+		main_img_url = main_img_url,
+		is_fake = True,
+		fake_type = article["type"],
+		author_ids = [author_id],
+		source_id = source_id)
 
 # Add all the source data to the database (tracks and prints progress to console)
-def add_source_data_to_db(source_data, source_name):
+def add_source_data_to_db(source_data, source_name, base_url):
 	# Add source to database
-	edit.add_source(source_name)
-
-	# Track total runtime
-	total_runtime = 0
-	# Set the last progress display time to the current time
-	lpd_time = datetime.datetime.now()
-	# Add articles to the database and display progress
-	for i in range(0, len(source_data)):
-		# This actually adds the article to the database (just passes it to another function to time how long it takes to execute)
-		runtime = utils.time_it(add_json_article_to_db, source_data[i], source_name)
-		# Total runtime of whole process
-		total_runtime = total_runtime + runtime
-		# Display only updates after at least 1 second has passed
-		if (datetime.datetime.now() - lpd_time) > datetime.timedelta(seconds = 1):
-			# Display progress bar
-			utils.progress_bar(50, i+1, len(source_data), cur_runtime = total_runtime, last_runtime = runtime)
-			# Update the last progress display time
-			lpd_time = datetime.datetime.now()
+	edit.add_source(source_name, base_url)
+	# Progress bar loop display and add to database
+	utils.loop_display_progress(source_data, add_json_article_to_db, source_name)
 
 	print("\nFinished adding %d articles from %s to the database." % (len(source_data), source_name))
 
-# @glc.new_connection(primary = True, pass_to_function = False)
+def add_csv_data_to_db(filename):
+	articles = read_csv_data(filename)
+	utils.loop_display_progress(articles, add_csv_article_to_db)
+
+@glc.new_connection(primary = True, pass_to_function = False)
 def main():
 	# add_source_data_to_db(read_json_data("data/bb_data.json"), "BreitBart")
 	# add_source_data_to_db(read_json_data("data/politico_data.json"), "Politico")
-	# glc.execute_db_command("""ALTER TABLE tokens ALTER COLUMN token TYPE text""")
-	bu.build_token_table()
+	add_source_data_to_db(read_nytimes_data("data/nytimes"), "New York Times", "nytimes.com")
+	# add_csv_data_to_db("data/fake.csv")
+	# bu.build_token_table()
 
 if __name__ == "__main__":
 	main()

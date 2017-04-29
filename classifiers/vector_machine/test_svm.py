@@ -4,6 +4,8 @@ def main():
 	iris = load_iris()
 	head = iris.data
 	target = iris.target
+	print(type(head))
+	print(target)
 
 	machine = SVM('linear')
 	machine.add_batch(head, target)

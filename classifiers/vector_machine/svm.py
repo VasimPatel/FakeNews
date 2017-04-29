@@ -1,8 +1,12 @@
 from sklearn import svm
 from sklearn.cross_validation import train_test_split
+from sklearn import preprocessing
+from sklearn.model_selection import GridSearchCV
 from sklearn import metrics
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
+
 
 class SVM:
 	def __init__(self, name='', description=''):
@@ -19,7 +23,12 @@ class SVM:
 		self.clf_fit = 0
 
 	def set_clf(self, kernel='linear'):
-		self.clf = svm.SVC(kernel=kernel, C=1)
+		# Set the parameters by cross-validation
+		tuned_parameters = [
+  			{'C': [1, 10, 100, 1000], 'kernel': ['linear']},
+  			{'C': [1, 10, 100, 1000], 'gamma': [0.001, 0.0001], 'kernel': ['rbf']},
+ 			]
+		self.clf = GridSearchCV(svm.SVC(C=1), tuned_parameters, cv=5)
 		self.clf_set = 1
 
 
@@ -29,8 +38,13 @@ class SVM:
 			print("Support Vector Machine is not set")
 			return
 
+		sys.stdout.write("fitting svm...")
+		sys.stdout.flush()
+
 		self.clf.fit(self.X_train, self.y_train)
+		#print("Best SVM Params: " + self.clf.best_params_)
 		self.clf_fit = 1
+
 
 	def add_batch(self, head, target):
 		self.data = head
@@ -45,11 +59,13 @@ class SVM:
 
 
 	def split_data(self, size = 0.2, random = 0):
+		self.data = preprocessing.scale(self.data)
 		if len(self.data) == 0 or len(self.targets) == 0:
 			print("There is no data to split.")
 			return
-
-		self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.data, self.targets, test_size = size, random_state = random)
+		head = np.array(self.data)
+		target = np.array(self.targets)
+		self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(head, target, test_size = size, random_state = random)
 
 
 
@@ -60,15 +76,15 @@ class SVM:
 
 		y_pred = self.clf.predict(self.X_test)
 
-		print("Classifier Accuracy: " + str(metrics.accuracy_score(self.y_test, y_pred)))
+		return metrics.accuracy_score(self.y_test, y_pred)
 
 
 
-	def predict_article(self, article):
+	def predict_article(self, head):
 		if self.clf_fit == 0:
 			print('Support Vector Machine is not fit')
 			return
 
-		return self.clf.predict(article)
+		result = self.clf.predict(head)
 
-
+		return result[0]
