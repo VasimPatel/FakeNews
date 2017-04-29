@@ -15,6 +15,7 @@ from psycopg2.extras import execute_values
 from unidecode import unidecode
 from nltk import word_tokenize
 from wordcloud import STOPWORDS
+from copy import deepcopy
 
 import Utils.common_utils as utils
 import Utils.connection_utils as glc
@@ -31,69 +32,70 @@ def tokenize_article(article):
 	# Return article tokens
 	return tokens
 
-@glc.new_connection(primary = True, pass_to_function = True)
-def build_token_table(connection, cursor):
-	glc.execute_db_command("""PREPARE token_insert AS INSERT INTO tokens (token) VALUES ($1) ON CONFLICT DO NOTHING""")
 
-	tokens = []
-	if os.path.isfile("tokens_backup"):
-		print("Loading token list from backup...")
-		with open("tokens_backup", "rb") as token_backup:
-			tokens = pickle.load(token_backup)
-	else:
-		articles = glc.execute_db_query("""SELECT content FROM articles""")
+# @glc.new_connection(primary = True, pass_to_function = True)
+# def build_token_table(connection, cursor):
+# 	glc.execute_db_command("""PREPARE token_insert AS INSERT INTO tokens (token) VALUES ($1) ON CONFLICT DO NOTHING""")
+#
+# 	tokens = []
+# 	if os.path.isfile("tokens_backup"):
+# 		print("Loading token list from backup...")
+# 		with open("tokens_backup", "rb") as token_backup:
+# 			tokens = pickle.load(token_backup)
+# 	else:
+# 		articles = glc.execute_db_query("""SELECT content FROM articles""")
+#
+# 		print("Building token list from articles...")
+# 		# Store last display time
+# 		lpd_time = datetime.datetime.now()
+# 		# Tokenize all articles
+# 		for i in range(0, len(articles)):
+# 			# Tokenize article and add tokens to list
+# 			tokens.extend(tokenize_article(articles[i]))
+# 			# Remove duplicates from token list
+# 			tokens = list(set(tokens))
+# 			# Display only updates after at least 1 second has passed
+# 			if (datetime.datetime.now() - lpd_time) > datetime.timedelta(seconds = 1):
+# 				# Display progress bar
+# 				utils.progress_bar(50, i+1, len(articles))
+# 				# Update the last progress display time
+# 				lpd_time = datetime.datetime.now()
+# 		print()
+#
+# 		with open("tokens_backup", "wb") as token_backup:
+# 			pickle.dump(tokens, token_backup)
+#
+# 	tokens = [(token,) for token in tokens]
+# 	print("Writing %d tokens to database..." % len(tokens))
+# 	cursor.executemany("""EXECUTE token_insert (%s)""", tokens)
+#
+# def build_nltk_training_list(articles):
+# 	training_list = []
+#
+# 	all_words = []
+# 	for article in articles:
+# 		article_dict = {}
+#
+# 		tokens = tokenize_article(article)
+# 		for token in tokens:
+# 			article_dict[token] = True
+#
+# 		for word in all_words:
+# 			if not word in article_dict.keys():
+# 				article_dict[word] = False
+#
+# 		all_words.extend(tokens)
+# 		all_words = list(set(all_words))
+#
+# 		training_list.append(article_dict)
+#
+# 	return training_list
 
-		print("Building token list from articles...")
-		# Store last display time
-		lpd_time = datetime.datetime.now()
-		# Tokenize all articles
-		for i in range(0, len(articles)):
-			# Tokenize article and add tokens to list
-			tokens.extend(tokenize_article(articles[i]))
-			# Remove duplicates from token list
-			tokens = list(set(tokens))
-			# Display only updates after at least 1 second has passed
-			if (datetime.datetime.now() - lpd_time) > datetime.timedelta(seconds = 1):
-				# Display progress bar
-				utils.progress_bar(50, i+1, len(articles))
-				# Update the last progress display time
-				lpd_time = datetime.datetime.now()
-		print()
-
-		with open("tokens_backup", "wb") as token_backup:
-			pickle.dump(tokens, token_backup)
-
-	tokens = [(token,) for token in tokens]
-	print("Writing %d tokens to database..." % len(tokens))
-	cursor.executemany("""EXECUTE token_insert (%s)""", tokens)
-
-def build_nltk_training_list(articles):
-	training_list = []
-
-	all_words = []
-	for article in articles:
-		article_dict = {}
-
-		tokens = tokenize_article(article)
-		for token in tokens:
-			article_dict[token] = True
-
-		for word in all_words:
-			if not word in article_dict.keys():
-				article_dict[word] = False
-
-		all_words.extend(tokens)
-		all_words = list(set(all_words))
-
-		training_list.append(article_dict)
-
-	return training_list
-
-def build_source_dict(articles):
+def build_source_dict(articles, starting_dict):
 	# Keep track of all the words that the source used
 	all_source_words = []
 
-	source_dict = {}
+	source_dict = deepcopy(starting_dict)
 	for article in articles:
 		tokens = tokenize_article(article)
 		for token in tokens:
@@ -109,23 +111,41 @@ def build_source_dict(articles):
 
 	return source_dict, list(set(all_source_words))
 
-def build_class_dict(articles, sources):
+def build_class_dict(articles, sources, tokens, classifyFromTokens):
 	class_dict = {}
 
-	for source in sources:
+	if classifyFromTokens == 0:
 
-		articles_from_source = []
-		for article in articles:
-			if article["source_id"] == source["source_id"]:
-				articles_from_source.append(article)
-				articles.remove(article)
+		real_dict = {}
+		fake_dict = {}
 
-		source_dict, source_words = build_source_dict(articles_from_source)
-		class_dict[source["source_id"]] = { "words": source_words, "classifier": source_dict }
+		for token in tokens:
+			real_dict[token["token"]] = 1 + token["realCount"]
+			fake_dict[token["token"]] = 1 + token["fakeCount"]
+
+		class_dict[0] = {"classifier": fake_dict}
+		class_dict[1] = {"classifier": real_dict}
+
+	else:
+		starting_dict = {}
+
+		for token in tokens:
+			starting_dict[token["token"]] = 1
+
+		for source in sources:
+
+			articles_from_source = []
+			for article in articles:
+				if article["source_id"] == source["source_id"]:
+					articles_from_source.append(article)
+					articles.remove(article)
+
+			source_dict, source_words = build_source_dict(articles_from_source, starting_dict)
+			class_dict[source["source_id"]] = { "words": source_words, "classifier": source_dict }
 
 	return class_dict
 
-def classify_article(dictionaries, article, overfit = 0):
+def classify_article(dictionaries, article, tokenNames):
 	'''
 	Process:
 		INPUT: set of dictionaries associated with a unique source, a test article
@@ -142,24 +162,11 @@ def classify_article(dictionaries, article, overfit = 0):
 
 	# Compute the actual scores of each sum for the test article by iterating across the tokens
 	for token in article_tokens:
-		# Create a dictionary of source ids to booleans for whether the current token is in each source
-		token_in_sources = dict.fromkeys(dictionaries.keys(), True)
-		# Create a field within the dictionary to determine whether the given token is in all sources
-		token_in_sources["all"] = True
-		# Populate the dictionary with the correct booleans for each source
-		for source_id in dictionaries.keys():
-			if dictionaries[source_id]["classifier"].get(token) is None:
-				token_in_sources["all"] = False
-				token_in_sources[source_id] = False
 
-		# Add to the overall article score based on whether the token in is the sources
-		for source_id in dictionaries.keys():
-			# If the token is in all sources then simply add the corresponding token value for each source
-			if token_in_sources["all"]:
+		if token in tokenNames:
+			# Add to the overall article score based on how often the token appears in the sources
+			for source_id in dictionaries.keys():
 				sums[source_id] = sums[source_id] + dictionaries[source_id]["classifier"][token]
-			# If the token is not in all sources then add 1 to the sources which it is not in (picking the minimum makes it less like to pick sources with words that don't appear in corpus)
-			elif not token_in_sources[source_id]:
-				sums[source_id] = sums[source_id] + overfit
 
-	# Teturn the source with the minimum sum of words. The article is classified as coming from this source.
+	# Return the source with the minimum sum of words. The article is classified as coming from this source.
 	return min(sums, key=sums.get), sums
