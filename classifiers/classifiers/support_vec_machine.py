@@ -7,6 +7,8 @@ import sys
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.externals import joblib
 import traceback
+import Utils.bayes_utils as bayes
+
 class SupportVectorMachine:
 	def __init__(self):
 		self.lda = None
@@ -16,6 +18,7 @@ class SupportVectorMachine:
 		self.articles = []
 		self.Fobj = features.Features()
 		self.features_collected = None
+		self.real_fake_word_dict = None
 
 	def set_articles(self, articles):
 		self.articles = articles
@@ -35,6 +38,17 @@ class SupportVectorMachine:
 		else:
 			self.lda, self.dictionary, self.corpus = corpus.lda(self.articles, load=load, num_t=num_t)
 
+	def set_bayes_classes(self, art_class, load = False):
+		if load == True:
+			self.real_fake_word_dict = joblib.load('word_dicts.pkl')
+		else:
+			self.real_fake_word_dict = {'real': bayes.build_source(art_class['real'])[0], 'fake': bayes.build_source(art_class['fake'])[0]}
+			joblib.dump(self.real_fake_word_dict, 'word_dicts.pkl')
+
+
+
+
+
 	def get_features(self):
 		if self.lda != None:
 			self.Fobj.set_clusters(self.articles, self.lda, self.dictionary, self.corpus)
@@ -49,7 +63,7 @@ class SupportVectorMachine:
 				sys.stdout.write("Feature Collection in Progress: {}%   \r".format(round(progress*100)) )
 				sys.stdout.flush()
 				try:
-					feature_set = self.Fobj.get_features(each_article, lda=self.lda, dictionary=self.dictionary, corpus = self.corpus)
+					feature_set = self.Fobj.get_features(each_article, lda=self.lda, dictionary=self.dictionary, corpus = self.corpus, class_dict = self.real_fake_word_dict)
 					target = each_article['is_fake']
 					if target == True:
 						target = 1
@@ -59,14 +73,21 @@ class SupportVectorMachine:
 					self.svm.add_data(feature_set, target)
 				except Exception as e:
 					sys.stdout.write("Training for this article failed. \r")
+					print(e)
 					pass
 		self.features_collected = self.Fobj.get_features_collected()
 
-	def train_svm(self, split):
+	def train_svm(self, split, load=False):
 		try:
-			self.svm.split_data(random=split)
-			self.svm.set_clf()
-			self.svm.fit_clf()
+			if load == True:
+				self.svm.clf = joblib.load('std.pkl')
+				sys.stdout.write("Loaded SVM")
+				self.svm.clf_fit = 1
+				self.svm.clf_set = 1
+			else:
+				self.svm.split_data(random=split)
+				self.svm.set_clf()
+				self.svm.fit_clf()
 		except Exception as e:
 			print("Could not train svm: ")
 			print("\tError: " + str(e))
@@ -109,28 +130,35 @@ def main():
 	machine = SupportVectorMachine()
 
 	#add articles to machine
-	query_fake = "SELECT * FROM articles where is_fake=True order by random() LIMIT 1000"
-	query_real = "SELECT * From articles where source_id=22236 order by random() limit 1000"
+	query_fake = "SELECT * FROM articles where is_fake=True order by random() LIMIT 500"
+	query_real = "SELECT * From articles where is_fake=False order by random() limit 250"
+	query_bp = "SELECT * From articles where is_fake is NULL order by random() limit 250"
+	#query_na = "SELECT * From articles where source_id= order by random() limit 500"
 
 	fake_a = query(query_fake)
 	real_a = query(query_real)
-
-	fake_a = random.sample(fake_a, 100)
-	real_a = random.sample(real_a, 100)
+	brei_po_a= query(query_bp)
+	#na_a = query(query_na)
 
 	articles = []
-	articles = articles + fake_a
-	articles = articles + real_a
+	articles_fake = fake_a
+	articles_real = real_a + brei_po_a
+
+	articles=articles_fake + articles_real
+
+	source_dict = {'real': articles_real, 'fake': articles_fake}
+
+	machine.set_bayes_classes(source_dict, load=True)
+	#articles = articles + na_a
 
 	random.shuffle(articles)
-
 	sys.stdout.write("done queries...")
 	sys.stdout.flush()
 
-	machine.set_articles(articles[:700])
+	machine.set_articles(articles)
 
 	#construct our lda. comment out if you want
-	machine.construct_lda(load=True,num_t=45)
+	machine.construct_lda(load=True,num_t=30)
 	sys.stdout.write("done lda construction...\n")
 	sys.stdout.flush()
 
@@ -140,7 +168,8 @@ def main():
 	sys.stdout.flush()
 
 	#train svm
-	machine.train_svm(10)
+	machine.train_svm(50,load=False)
+
 	sys.stdout.write("done training...")
 	sys.stdout.flush()
 
@@ -155,9 +184,19 @@ def main():
 	y_true, y_pred = machine.svm.y_test, machine.svm.clf.predict(machine.svm.X_test)
 	print(classification_report(y_true, y_pred))
 
-'''
 
-	test_articles = articles[700:750]
+'''
+	test_articles = []
+	query_fake_t = "SELECT * FROM articles where is_fake=True order by random() LIMIT 200"
+	query_real_t = "SELECT * From articles where is_fake=False order by random() limit 200"
+	query_bp_t = "SELECT * From articles where is_fake is NULL order by random() limit 200"
+
+	t_f = query(query_fake_t)
+	t_r = query(query_real_t)
+	t_bp = query(query_bp_t)
+	test_articles = test_articles + t_f
+	test_articles = test_articles + t_r
+	test_articles = test_articles + t_bp
 	total = 0
 	correct=0
 	total_f = 0
@@ -172,7 +211,7 @@ def main():
 			test_F.set_clusters(machine.articles, machine.lda, machine.dictionary, machine.corpus)
 			sys.stdout.write("getting features...")
 			sys.stdout.flush()
-			a_f = test_F.get_features(each, lda=machine.lda, dictionary=machine.dictionary, corpus=machine.corpus)
+			a_f = test_F.get_features(each, lda=machine.lda, dictionary=machine.dictionary, corpus=machine.corpus, class_dict= machine.real_fake_word_dict)
 			sys.stdout.write("got features...")
 			sys.stdout.flush()
 			if each['is_fake'] == True:
@@ -205,8 +244,9 @@ def main():
 	print("\n\tFake Accuracy: " + str(correct_f) + "/" + str(total_f) + ": " + str(correct_f/total_f))
 	print("\n\tReal Accuracy: " + str(correct_r) + "/" + str(total_r) + ": " + str(correct_r/total_r))
 
-	feature_names = machine.features_collected
-	print(machine.features_collected)
-	target_names = ['Fake', 'Real']
+	#feature_names = machine.features_collected
+	#print(machine.features_collected)
+	#target_names = ['Fake', 'Real']
+
 
 '''

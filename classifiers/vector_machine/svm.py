@@ -6,6 +6,7 @@ from sklearn import metrics
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
+from sklearn.externals import joblib
 
 
 class SVM:
@@ -28,7 +29,7 @@ class SVM:
   			{'C': [1, 10, 100, 1000], 'kernel': ['linear']},
   			{'C': [1, 10, 100, 1000], 'gamma': [0.001, 0.0001], 'kernel': ['rbf']},
  			]
-		self.clf = GridSearchCV(svm.SVC(C=1), tuned_parameters, cv=5)
+		self.clf = GridSearchCV(svm.SVC(C=1), tuned_parameters, cv=5, n_jobs=10)
 		self.clf_set = 1
 
 
@@ -44,6 +45,7 @@ class SVM:
 		self.clf.fit(self.X_train, self.y_train)
 		#print("Best SVM Params: " + self.clf.best_params_)
 		self.clf_fit = 1
+		joblib.dump(self.clf, 'std.pkl')
 
 
 	def add_batch(self, head, target):

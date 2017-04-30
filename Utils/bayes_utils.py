@@ -170,3 +170,53 @@ def classify_article(dictionaries, article, tokenNames):
 
 	# Return the source with the minimum sum of words. The article is classified as coming from this source.
 	return min(sums, key=sums.get), sums
+
+
+
+def build_source(articles):
+	# Keep track of all the words that the source used
+	all_source_words = []
+
+	source_dict = {}
+	for article in articles:
+		tokens = tokenize_article(article)
+		for token in tokens:
+			if token in source_dict.keys():
+				source_dict[token] = source_dict[token] + 1
+			else:
+				source_dict[token] = 1
+
+		all_source_words.extend(tokens)
+
+	for key, value in source_dict.items():
+		source_dict[key] = -1 * (math.log(float(source_dict[key]) / float(len(all_source_words))))
+
+	return source_dict, list(set(all_source_words))
+
+def classify(dictionaries, article):
+	'''
+	Process:
+		INPUT: set of dictionaries associated with a unique source, a test article
+		OUTPUT: The source associated with the test article
+
+	uncomment next line when testing with test_classify_article.py
+	tokens = article.split(" ")
+	'''
+
+	# Comment next line when testing with test_classify_article.py
+	article_tokens = tokenize_article(article)
+	# Initialize keys (source name) and values = 0 for each source-associated score dictionary
+	sums = dict.fromkeys(dictionaries.keys(), 0)
+
+	# Compute the actual scores of each sum for the test article by iterating across the tokens
+	for token in article_tokens:
+			# Add to the overall article score based on how often the token appears in the sources
+			for source_id in dictionaries.keys():
+				if dictionaries[source_id].get(token) != None:
+					sums[source_id] = sums[source_id] + dictionaries[source_id][token]
+				else:
+					sums[source_id] = sums[source_id] + 13
+
+
+	# Return the source with the minimum sum of words. The article is classified as coming from this source.
+	return min(sums, key=sums.get), sums

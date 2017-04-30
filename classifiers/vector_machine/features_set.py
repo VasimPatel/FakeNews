@@ -17,16 +17,19 @@ class Features:
 		# 2. add filename to self.feature_list
 		# 3. you are good to go
 		#######
-		self.feature_list = ['ReadingLevel', 'HeadlineSentiment']
+		self.feature_list = ['bayes_clf']
 		self.num_topics = 0
 		self.clusters = None
 
-	def get_features(self, article, lda = None, dictionary = None, corpus = None):
+	def get_features(self, article, lda = None, dictionary = None, corpus = None, class_dict = None):
 		feature_vector = []
 		num_topics = 0
 		for feature in self.feature_list:
 			feature_mod = importlib.import_module("classifiers.features." + feature)
-			feature_vector.append(feature_mod.get(article))
+			if feature != 'bayes_clf':
+				feature_vector.append(feature_mod.get(article))
+			else:
+				feature_vector.append(feature_mod.get(article, class_dict))
 
 		if lda != None:
 			#----------------------------------------------------------------------------
