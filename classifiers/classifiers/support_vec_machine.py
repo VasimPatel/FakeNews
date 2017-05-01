@@ -45,7 +45,7 @@ class SupportVectorMachine:
 			self.real_fake_word_dict = joblib.load('word_dicts.pkl')
 		else:
 			self.real_fake_word_dict = {'real': bayes.build_source(art_class['real'])[0], 'fake': bayes.build_source(art_class['fake'])[0]}
-			joblib.dump(self.real_fake_word_dict, 'word_dicts.pkl')
+			joblib.dump(self.real_fake_word_dict, 'word_dicts_1.pkl')
 
 
 
@@ -79,7 +79,7 @@ class SupportVectorMachine:
 					pass
 		self.features_collected = self.Fobj.get_features_collected()
 
-	def train_svm(self, split, load=False):
+	def train_svm(self, test_size=.25, load=False):
 		try:
 			if load == True:
 				self.svm.clf = joblib.load('std.pkl')
@@ -87,7 +87,7 @@ class SupportVectorMachine:
 				self.svm.clf_fit = 1
 				self.svm.clf_set = 1
 			else:
-				self.svm.split_data(random=split)
+				self.svm.split_data(test_size)
 				self.svm.set_clf()
 				self.svm.fit_clf()
 		except Exception as e:
@@ -106,8 +106,13 @@ class SupportVectorMachine:
 		return result
 
 @glc.new_connection(primary = True, pass_to_function = False)
-def query(query):
-	return glc.execute_db_query(query)
+def query(query, variables = None):
+	res = None
+	if variables is None:
+		res = glc.execute_db_query(query)
+	else:
+		res = glc.execute_db_query(query, variables)
+	return res
 
 def preprocess_data(articles):
 	for each_article in articles:
@@ -132,9 +137,9 @@ def main():
 	machine = SupportVectorMachine()
 
 	#add articles to machine
-	query_fake = "SELECT * FROM articles where is_fake=True order by random() LIMIT 50"
-	query_real = "SELECT * From articles where is_fake=False order by random() limit 25"
-	query_bp = "SELECT * From articles where is_fake is NULL order by random() limit 25"
+	query_fake = "SELECT * FROM articles where is_fake=True order by random() LIMIT 100"
+	query_real = "SELECT * From articles where is_fake=False order by random() limit 50"
+	query_bp = "SELECT * From articles where is_fake is NULL order by random() limit 50"
 	#query_na = "SELECT * From articles where source_id= order by random() limit 500"
 
 	fake_a = query(query_fake)
@@ -170,7 +175,7 @@ def main():
 	sys.stdout.flush()
 
 	#train svm
-	machine.train_svm(50,load=False)
+	machine.train_svm(test_size=.25, load=False)
 
 	sys.stdout.write("done training...")
 	sys.stdout.flush()
@@ -189,16 +194,19 @@ def main():
 
 
 	test_articles = []
-	query_fake_t = "SELECT * FROM articles where is_fake=True order by random() LIMIT 20"
-	query_real_t = "SELECT * From articles where is_fake=False order by random() limit 10"
-	query_bp_t = "SELECT * From articles where is_fake is NULL order by random() limit 10"
+	article_ids = [322192, 321344, 320032, 318316, 322931, 314573, 335192, 333674, 334393, 318466, 315706, 323739, 321762, 319347, 319315, 335922, 320252, 319549, 323124, 336352, 338524, 342748, 349622, 343091, 346231, 342262, 338204, 344140, 341987, 348641, 222508, 171236, 33373, 183205, 307319, 288772, 225597, 253192, 260425, 69703]
 
-	t_f = query(query_fake_t)
-	t_r = query(query_real_t)
-	t_bp = query(query_bp_t)
-	test_articles = test_articles + t_f
-	test_articles = test_articles + t_r
-	test_articles = test_articles + t_bp
+	# query_fake_t = "SELECT * FROM articles where is_fake=True order by random() LIMIT 20"
+	#query_real_t = "SELECT * From articles where is_fake=False order by random() limit 10"
+	#query_bp_t = "SELECT * From articles where is_fake is NULL order by random() limit 10"
+	db_q = "SELECT * FROM articles where article_id = any(%s)"
+	test_articles = query(db_q, (article_ids,))
+	# t_f = query(query_fake_t)
+	# t_r = query(query_real_t)
+	# t_bp = query(query_bp_t)
+	# test_articles = test_articles + t_f
+	# test_articles = test_articles + t_r
+	# test_articles = test_articles + t_bp
 	total = 0
 	correct=0
 	total_f = 0
@@ -210,13 +218,14 @@ def main():
 	test_F = features.Features()
 	i = 0
 	t = len(test_articles)
+
 	for each in test_articles:
 		aid = each['article_id']
 		ifk = each['is_fake']
 
 		title = str(aid) + '_' + str(ifk) + '.txt'
 		try:
-			test_F.set_clusters(machine.articles, machine.lda, machine.dictionary, machine.corpus)
+			#test_F.set_clusters(machine.articles, machine.lda, machine.dictionary, machine.corpus)
 			sys.stdout.write("getting features...")
 			sys.stdout.flush()
 			a_f = test_F.get_features(each, lda=machine.lda, dictionary=machine.dictionary, corpus=machine.corpus, class_dict= machine.real_fake_word_dict)
@@ -227,6 +236,12 @@ def main():
 			else:
 				c = 0
 			classif = machine.predict_svm([a_f])
+			print("\nclass: " + str(classif))
+			print("\nreal class: " + str(c))
+			print("\nlen article: " + str(len(each['content'])))
+			print('\nsource id: ' + str(each['source_id']))
+			print('\narticle id: ' + str(each['article_id']))
+			# article_ids.append(each['article_id'])
 			if classif == c:
 				correct += 1
 				if c == 1:
@@ -235,7 +250,7 @@ def main():
 					correct_r += 1
 			else:
 				try:
-					json_str = json.dumps({'title': each['title'], 'content': each['content']})
+					json_str = json.dumps({'source_id': each['source_id'], 'article_id': each['article_id'], 'title': each['title'], 'content': each['content']})
 					with open('incorrect/' + title, 'w') as f:
 						json.dump(json_str, f)
 						f.close()
@@ -270,6 +285,7 @@ def main():
 	print("\n\tTotal Accuracy: " +  str(correct) + "/" + str(total) +": " + str(correct/total))
 	print("\n\tFake Accuracy: " + str(correct_f) + "/" + str(total_f) + ": " + str(correct_f/total_f))
 	print("\n\tReal Accuracy: " + str(correct_r) + "/" + str(total_r) + ": " + str(correct_r/total_r))
+	# print(article_ids)
 
 	#feature_names = machine.features_collected
 	#print(machine.features_collected)

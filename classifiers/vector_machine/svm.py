@@ -45,7 +45,7 @@ class SVM:
 		self.clf.fit(self.X_train, self.y_train)
 		#print("Best SVM Params: " + self.clf.best_params_)
 		self.clf_fit = 1
-		joblib.dump(self.clf, 'std.pkl')
+		joblib.dump(self.clf, 'std_1.pkl')
 
 
 	def add_batch(self, head, target):
@@ -60,14 +60,14 @@ class SVM:
 
 
 
-	def split_data(self, size = 0.2, random = 0):
+	def split_data(self, test_size):
 		self.data = preprocessing.scale(self.data)
 		if len(self.data) == 0 or len(self.targets) == 0:
 			print("There is no data to split.")
 			return
 		head = np.array(self.data)
 		target = np.array(self.targets)
-		self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(head, target, test_size = size, random_state = random)
+		self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(head, target, test_size = test_size)
 
 
 
