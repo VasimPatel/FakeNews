@@ -34,22 +34,18 @@ class SupportVectorMachine:
 			self.articles.append(each_article)
 
 	def construct_lda(self, load=False, num_t=10):
-		if len(self.articles) == 0:
+		if len(self.articles) == 0 and load == False:
 			print("No articles have been pulled!")
 			return 0
 		else:
 			self.lda, self.dictionary, self.corpus = corpus.lda(self.articles, load=load, num_t=num_t)
 
-	def set_bayes_classes(self, art_class, load = False):
+	def set_bayes_classes(self, source_dict=None, load = False):
 		if load == True:
 			self.real_fake_word_dict = joblib.load('word_dicts.pkl')
 		else:
-			self.real_fake_word_dict = {'real': bayes.build_source(art_class['real'])[0], 'fake': bayes.build_source(art_class['fake'])[0]}
+			self.real_fake_word_dict = {'real': bayes.build_source(source_dict['real'])[0], 'fake': bayes.build_source(source_dict['fake'])[0]}
 			joblib.dump(self.real_fake_word_dict, 'word_dicts_1.pkl')
-
-
-
-
 
 	def get_features(self):
 		if self.lda != None:
@@ -82,7 +78,7 @@ class SupportVectorMachine:
 	def train_svm(self, test_size=.25, load=False):
 		try:
 			if load == True:
-				self.svm.clf = joblib.load('std.pkl')
+				self.svm.clf = joblib.load('std_1.pkl')
 				sys.stdout.write("Loaded SVM")
 				self.svm.clf_fit = 1
 				self.svm.clf_set = 1
@@ -142,26 +138,35 @@ def main():
 	query_bp = "SELECT * From articles where is_fake is NULL order by random() limit 250"
 	#query_na = "SELECT * From articles where source_id= order by random() limit 500"
 
-	fake_a = query(query_fake)
-	real_a = query(query_real)
-	brei_po_a= query(query_bp)
+	#uncoment when not loading svm
+	# fake_a = query(query_fake)
+	# real_a = query(query_real)
+	# brei_po_a= query(query_bp)
 	#na_a = query(query_na)
 
 	articles = []
-	articles_fake = fake_a
-	articles_real = real_a + brei_po_a
+	#uncomment when not loading svm
+	# articles_fake = fake_a
+	# articles_real = real_a + brei_po_a
 
-	articles=articles_fake + articles_real
+	#uncomment when not loading svm
+	# articles=articles_fake + articles_real
 
-	source_dict = {'real': articles_real, 'fake': articles_fake}
+	#uncomment when not loading svm
+	# source_dict = {'real': articles_real, 'fake': articles_fake}
 
-	machine.set_bayes_classes(source_dict, load=True)
+	machine.set_bayes_classes(load=True)
+
+	#uncomment when not loading svm
+	#machine.set_bayes_classes(source_dict, load=True)
 	#articles = articles + na_a
 
+	#shuffle articles for robustness
 	random.shuffle(articles)
 	sys.stdout.write("done queries...")
 	sys.stdout.flush()
 
+	#set articles for machine to get features of
 	machine.set_articles(articles)
 
 	#construct our lda. comment out if you want
@@ -170,35 +175,34 @@ def main():
 	sys.stdout.flush()
 
 	#get features for each article
-	machine.get_features()
-	sys.stdout.write("done feature collection...\n\n")
-	sys.stdout.flush()
+	#machine.get_features()
+	#sys.stdout.write("done feature collection...\n\n")
+	#sys.stdout.flush()
 
-	#train svm
-	machine.train_svm(test_size=.25, load=False)
+	#train svm 
+	machine.train_svm(load=True)
+	print(machine.svm.clf)
+
+	#uncomment when not loading svm
+	#machine.train_svm(test_size=.25, load=True)
 
 	sys.stdout.write("done training...")
 	sys.stdout.flush()
 
-	#run svm
-	#result = machine.run_svm()
-	#sys.stdout.write("done running...")
-	#sys.stdout.flush()
 
-	#sys.stdout.write("\n\tClassifier Accuracy: " + str(result))
+	#get prediction stats
+	#uncomment when not loading svm
+	#y_true, y_pred = machine.svm.y_test, machine.svm.clf.predict(machine.svm.X_test)
+	#sys.stdout.write(classification_report(y_true, y_pred))
 	#sys.stdout.flush()
-
-	y_true, y_pred = machine.svm.y_test, machine.svm.clf.predict(machine.svm.X_test)
-	sys.stdout.write(classification_report(y_true, y_pred))
-	sys.stdout.flush()
 
 
 	test_articles = []
 	#article_ids = [322192, 321344, 320032, 318316, 322931, 314573, 335192, 333674, 334393, 318466, 315706, 323739, 321762, 319347, 319315, 335922, 320252, 319549, 323124, 336352, 338524, 342748, 349622, 343091, 346231, 342262, 338204, 344140, 341987, 348641, 222508, 171236, 33373, 183205, 307319, 288772, 225597, 253192, 260425, 69703]
 
-	query_fake_t = "SELECT * FROM articles where is_fake=True order by random() LIMIT 100"
-	query_real_t = "SELECT * From articles where is_fake=False order by random() limit 50"
-	query_bp_t = "SELECT * From articles where is_fake is NULL order by random() limit 50"
+	query_fake_t = "SELECT * FROM articles where is_fake=True order by random() LIMIT 10"
+	query_real_t = "SELECT * From articles where is_fake=False order by random() limit 5"
+	query_bp_t = "SELECT * From articles where is_fake is NULL order by random() limit 5"
 	#db_q = "SELECT * FROM articles where article_id = any(%s)"
 	#test_articles = query(db_q, (article_ids,))
 	t_f = query(query_fake_t)
@@ -218,7 +222,7 @@ def main():
 	test_F = features.Features()
 	i = 0
 	t = len(test_articles)
-
+	random.shuffle(test_articles)
 	for each in test_articles:
 		aid = each['article_id']
 		ifk = each['is_fake']

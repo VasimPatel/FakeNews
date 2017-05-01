@@ -74,7 +74,6 @@ def lda(articles, num_t=10, nameScheme = "test", load=True):
 def get_topic_distr(article, lda, dictionary, corpus):
 
 	article_content = convert(article['content'])
-	article_id = article['article_id']
 	
 	#convert article text to bow
 	vec_bow = dictionary.doc2bow(article_content.split())
@@ -82,7 +81,7 @@ def get_topic_distr(article, lda, dictionary, corpus):
 	#calculate topic distribution for article
 	topic_distr = lda.get_document_topics(vec_bow, minimum_probability=0)
 	
-	return topic_distr, article_id
+	return topic_distr
 
 
 

@@ -71,7 +71,7 @@ class Features:
 
 	def get_topicmod_features(self, article, lda, dictionary, corpus):
 		#get topic distribution for an article
-		topic_dis, article_id = get_topic_distr(article, lda, dictionary, corpus)
+		topic_dis= get_topic_distr(article, lda, dictionary, corpus)
 
 		return topic_dis
 

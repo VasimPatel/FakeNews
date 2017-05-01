@@ -1,1 +1,0 @@
-"{\"source_id\": 2, \"content\": \"The poll was of \\u201chigh participation registered voters and voters that fit Michigan General Election voting patterns.\\u201d The same poll had Obama up four points in early October.\", \"title\": \"Poll: Romney Up 1 in Michigan\", \"article_id\": 234227}"
