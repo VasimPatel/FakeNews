@@ -9,6 +9,8 @@ from sklearn.externals import joblib
 import traceback
 import Utils.bayes_utils as bayes
 
+import json
+
 class SupportVectorMachine:
 	def __init__(self):
 		self.lda = None
@@ -130,9 +132,9 @@ def main():
 	machine = SupportVectorMachine()
 
 	#add articles to machine
-	query_fake = "SELECT * FROM articles where is_fake=True order by random() LIMIT 500"
-	query_real = "SELECT * From articles where is_fake=False order by random() limit 250"
-	query_bp = "SELECT * From articles where is_fake is NULL order by random() limit 250"
+	query_fake = "SELECT * FROM articles where is_fake=True order by random() LIMIT 50"
+	query_real = "SELECT * From articles where is_fake=False order by random() limit 25"
+	query_bp = "SELECT * From articles where is_fake is NULL order by random() limit 25"
 	#query_na = "SELECT * From articles where source_id= order by random() limit 500"
 
 	fake_a = query(query_fake)
@@ -182,14 +184,14 @@ def main():
 	#sys.stdout.flush()
 
 	y_true, y_pred = machine.svm.y_test, machine.svm.clf.predict(machine.svm.X_test)
-	print(classification_report(y_true, y_pred))
+	sys.stdout.write(classification_report(y_true, y_pred))
+	sys.stdout.flush()
 
 
-'''
 	test_articles = []
-	query_fake_t = "SELECT * FROM articles where is_fake=True order by random() LIMIT 200"
-	query_real_t = "SELECT * From articles where is_fake=False order by random() limit 200"
-	query_bp_t = "SELECT * From articles where is_fake is NULL order by random() limit 200"
+	query_fake_t = "SELECT * FROM articles where is_fake=True order by random() LIMIT 20"
+	query_real_t = "SELECT * From articles where is_fake=False order by random() limit 10"
+	query_bp_t = "SELECT * From articles where is_fake is NULL order by random() limit 10"
 
 	t_f = query(query_fake_t)
 	t_r = query(query_real_t)
@@ -206,7 +208,13 @@ def main():
 	sys.stdout.write("\ntesting against untrained data...\n")
 	sys.stdout.flush()
 	test_F = features.Features()
+	i = 0
+	t = len(test_articles)
 	for each in test_articles:
+		aid = each['article_id']
+		ifk = each['is_fake']
+
+		title = str(aid) + '_' + str(ifk) + '.txt'
 		try:
 			test_F.set_clusters(machine.articles, machine.lda, machine.dictionary, machine.corpus)
 			sys.stdout.write("getting features...")
@@ -225,16 +233,35 @@ def main():
 					correct_f += 1
 				if c == 0:
 					correct_r += 1
+			else:
+				try:
+					json_str = json.dumps({'title': each['title'], 'content': each['content']})
+					with open('incorrect/' + title, 'w') as f:
+						json.dump(json_str, f)
+						f.close()
+				except Exception as e:
+					print(e)
+					pass
+
 			if c == 1:
 				total_f += 1
 			if c == 0:
 				total_r += 1
 
+			if total_f != 0:
+				f_acc = round(correct_f/total_f, 2)
+			if total_f == 0:
+				f_acc = 0
+			if total_r != 0:
+				r_acc = round(correct_r/total_r,2)
+			if total_r == 0:
+				r_acc = 0
+
 			class_true.append(c)
 			class_pred.append(classif)
 
 			total += 1
-			sys.stdout.write("Done...Test: " + str(total) + "/" + str(len(test_articles)) + "\n")
+			sys.stdout.write("Done...Test: " + str(total) + "/" + str(len(test_articles)) + ".....total accuracy: "  + str(round(correct/total,2)) + ", Fake accuracy: " + str(f_acc) + ", Real accuracy: " + str(r_acc)+ "\r")
 			sys.stdout.flush()
 		except Exception as e:
 			print("Error!!: " + str(e))
@@ -247,6 +274,3 @@ def main():
 	#feature_names = machine.features_collected
 	#print(machine.features_collected)
 	#target_names = ['Fake', 'Real']
-
-
-'''

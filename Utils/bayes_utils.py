@@ -24,7 +24,7 @@ def tokenize_article(article):
 	# Build list of stopwords to remove
 	stopwords = set(STOPWORDS)
 	# Tokenize the article using nltk
-	tokens = word_tokenize(article["content"])
+	tokens = word_tokenize(convert(article["content"]))
 	# Remove all stop words from tokens
 	for stop_word in stopwords:
 		tokens = [token for token in tokens if not token.lower() == stop_word.lower()]
@@ -220,3 +220,6 @@ def classify(dictionaries, article):
 
 	# Return the source with the minimum sum of words. The article is classified as coming from this source.
 	return min(sums, key=sums.get), sums
+
+def convert(article):
+	return article.encode('ascii', errors='ignore').decode('utf-8').replace("\ ", '')
