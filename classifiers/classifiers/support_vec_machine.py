@@ -137,9 +137,9 @@ def main():
 	machine = SupportVectorMachine()
 
 	#add articles to machine
-	query_fake = "SELECT * FROM articles where is_fake=True order by random() LIMIT 100"
-	query_real = "SELECT * From articles where is_fake=False order by random() limit 50"
-	query_bp = "SELECT * From articles where is_fake is NULL order by random() limit 50"
+	query_fake = "SELECT * FROM articles where is_fake=True order by random() LIMIT 500"
+	query_real = "SELECT * From articles where is_fake=False order by random() limit 250"
+	query_bp = "SELECT * From articles where is_fake is NULL order by random() limit 250"
 	#query_na = "SELECT * From articles where source_id= order by random() limit 500"
 
 	fake_a = query(query_fake)
@@ -194,19 +194,19 @@ def main():
 
 
 	test_articles = []
-	article_ids = [322192, 321344, 320032, 318316, 322931, 314573, 335192, 333674, 334393, 318466, 315706, 323739, 321762, 319347, 319315, 335922, 320252, 319549, 323124, 336352, 338524, 342748, 349622, 343091, 346231, 342262, 338204, 344140, 341987, 348641, 222508, 171236, 33373, 183205, 307319, 288772, 225597, 253192, 260425, 69703]
+	#article_ids = [322192, 321344, 320032, 318316, 322931, 314573, 335192, 333674, 334393, 318466, 315706, 323739, 321762, 319347, 319315, 335922, 320252, 319549, 323124, 336352, 338524, 342748, 349622, 343091, 346231, 342262, 338204, 344140, 341987, 348641, 222508, 171236, 33373, 183205, 307319, 288772, 225597, 253192, 260425, 69703]
 
-	# query_fake_t = "SELECT * FROM articles where is_fake=True order by random() LIMIT 20"
-	#query_real_t = "SELECT * From articles where is_fake=False order by random() limit 10"
-	#query_bp_t = "SELECT * From articles where is_fake is NULL order by random() limit 10"
-	db_q = "SELECT * FROM articles where article_id = any(%s)"
-	test_articles = query(db_q, (article_ids,))
-	# t_f = query(query_fake_t)
-	# t_r = query(query_real_t)
-	# t_bp = query(query_bp_t)
-	# test_articles = test_articles + t_f
-	# test_articles = test_articles + t_r
-	# test_articles = test_articles + t_bp
+	query_fake_t = "SELECT * FROM articles where is_fake=True order by random() LIMIT 100"
+	query_real_t = "SELECT * From articles where is_fake=False order by random() limit 50"
+	query_bp_t = "SELECT * From articles where is_fake is NULL order by random() limit 50"
+	#db_q = "SELECT * FROM articles where article_id = any(%s)"
+	#test_articles = query(db_q, (article_ids,))
+	t_f = query(query_fake_t)
+	t_r = query(query_real_t)
+	t_bp = query(query_bp_t)
+	test_articles = test_articles + t_f
+	test_articles = test_articles + t_r
+	test_articles = test_articles + t_bp
 	total = 0
 	correct=0
 	total_f = 0
@@ -236,11 +236,11 @@ def main():
 			else:
 				c = 0
 			classif = machine.predict_svm([a_f])
-			print("\nclass: " + str(classif))
-			print("\nreal class: " + str(c))
-			print("\nlen article: " + str(len(each['content'])))
-			print('\nsource id: ' + str(each['source_id']))
-			print('\narticle id: ' + str(each['article_id']))
+			#print("\nclass: " + str(classif))
+			#print("\nreal class: " + str(c))
+			#print("\nlen article: " + str(len(each['content'])))
+			#print('\nsource id: ' + str(each['source_id']))
+			#print('\narticle id: ' + str(each['article_id']))
 			# article_ids.append(each['article_id'])
 			if classif == c:
 				correct += 1

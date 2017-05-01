@@ -25,11 +25,12 @@ class SVM:
 
 	def set_clf(self, kernel='linear'):
 		# Set the parameters by cross-validation
-		tuned_parameters = [
-  			{'C': [1, 10, 100, 1000], 'kernel': ['linear']},
-  			{'C': [1, 10, 100, 1000], 'gamma': [0.001, 0.0001], 'kernel': ['rbf']},
- 			]
-		self.clf = GridSearchCV(svm.SVC(C=1), tuned_parameters, cv=5, n_jobs=10)
+		# tuned_parameters = [
+  			# {'C': [1, 10, 100, 1000], 'kernel': ['linear']},
+  			# {'C': [1, 10, 100, 1000], 'gamma': [0.001, 0.0001], 'kernel': ['rbf']},
+ 			# ]
+		# self.clf = GridSearchCV(svm.SVC(C=1), tuned_parameters, cv=5, n_jobs=10)
+		self.clf = svm.SVC()
 		self.clf_set = 1
 
 
