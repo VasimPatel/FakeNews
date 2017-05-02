@@ -1,7 +1,7 @@
 # @Author: DivineEnder <DivineHP>
 # @Date:   2017-03-04 23:27:36
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-04-20 00:11:16
+# @Last modified time: 2017-05-01 21:21:01
 
 # Import required modules
 import os
@@ -60,7 +60,10 @@ def setup_tags():
 def setup_tokens():
 	glc.execute_db_command("""CREATE TABLE tokens (
 		token_id serial UNIQUE PRIMARY KEY,
-		token text UNIQUE
+		token text UNIQUE,
+		real_count bigint DEFAULT 0,
+		fake_count bigint DEFAULT 0,
+		null_count bigint DEFAULT 0
 	)""")
 
 def setup_indexes():
@@ -86,6 +89,7 @@ def setup_constraints():
 	glc.execute_db_command("""ALTER TABLE articles ADD CONSTRAINT check_fake_types CHECK (fake_type IN ('bs', 'conspiracy', 'satire', 'hate', 'fake', 'state', 'junksci', 'bias', 'NO_CLASS'))""")
 	glc.execute_db_command("""ALTER TABLE articles ADD CONSTRAINT unique_articles UNIQUE (title, publish_date, source_id)""")
 	glc.execute_db_command("""ALTER TABLE authors ADD CONSTRAINT unique_authors UNIQUE (first_name, last_name)""")
+	glc.execute_db_command("""ALTER TABLE tokens ADD CONSTRAINT pos_count_check CHECK (real_count >= 0 AND fake_count >= 0 AND null_count >= 0)""")
 
 @glc.new_connection(primary = True, pass_to_function = False)
 def main():

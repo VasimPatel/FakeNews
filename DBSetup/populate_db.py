@@ -2,7 +2,7 @@
 # @Date:   2017-03-08 13:49:12
 # @Email:  danuta@u.rochester.edu
 # @Last modified by:   DivineEnder
-# @Last modified time: 2017-04-22 15:41:30
+# @Last modified time: 2017-05-01 21:31:53
 
 import os
 import Utils.bayes_utils as bu
@@ -46,6 +46,15 @@ def read_nytimes_data(folder):
 			with open(dirpath + "/" + filename) as data:
 				for line in data:
 					articles.append(json.loads(line.replace("\n", "")))
+
+	return articles
+
+def read_wsj_data(folder):
+	articles = []
+	for (dirpath, dirnames, filenames) in os.walk(folder):
+		for filename in filenames:
+			with open(dirpath + "/" + filename) as data:
+				articles.extend(json.load(data))
 
 	return articles
 
@@ -100,7 +109,7 @@ def read_json_data_manual(filename):
 	return articles
 
 # Add the article to the database
-def add_json_article_to_db(article, source_name, VERBOSE = False):
+def add_json_article_to_db(article, source_id, VERBOSE = False):
 	tag_ids = []
 	for tag in article["tags"]:
 		tag_id = edit.add_tag(tag, VERBOSE = VERBOSE)
@@ -108,23 +117,24 @@ def add_json_article_to_db(article, source_name, VERBOSE = False):
 	tag_ids = list(set(tag_ids))
 
 	author_ids = []
-	for author in article["authors"]:
-		names = author.split(" ")
-		first_name = unidecode(names[0])
-		last_name = unidecode(names[-1])
-		middle_name = unidecode(str(names[1:-1]).strip("[]").replace(",", "").replace("'", ""))
-		if not middle_name:
-			middle_name = None
+	# for author in article["author"]:
+	author = article["author"]
+	names = author.split(" ")
+	first_name = unidecode(names[0])
+	last_name = unidecode(names[-1])
+	middle_name = unidecode(str(names[1:-1]).strip("[]").replace(",", "").replace("'", ""))
+	if not middle_name:
+		middle_name = None
 
-		author_id = edit.add_author(first_name, last_name, middle_name, VERBOSE = VERBOSE)
-		author_ids.append(author_id)
-	author_ids = list(set(author_ids))
+	author_id = edit.add_author(first_name, last_name, middle_name, VERBOSE = VERBOSE)
+	author_ids.append(author_id)
+	# author_ids = list(set(author_ids))
 
 	edit.add_article(title = article["title"],
 		url = article["url"],
 		publish_date = parser.parse(article["date"]),
 		content = article["content"],
-		source_id = db.get_source_named(source_name)['source_id'],
+		source_id = source_id,
 		is_fake = False,
 		author_ids = author_ids,
 		tag_ids = tag_ids,
@@ -158,9 +168,9 @@ def add_csv_article_to_db(article, VERBOSE = False):
 # Add all the source data to the database (tracks and prints progress to console)
 def add_source_data_to_db(source_data, source_name, base_url):
 	# Add source to database
-	edit.add_source(source_name, base_url)
+	source_id = edit.add_source(source_name, base_url)
 	# Progress bar loop display and add to database
-	utils.loop_display_progress(source_data, add_json_article_to_db, source_name)
+	utils.loop_display_progress(source_data, add_json_article_to_db, source_id)
 
 	print("\nFinished adding %d articles from %s to the database." % (len(source_data), source_name))
 
@@ -168,13 +178,14 @@ def add_csv_data_to_db(filename):
 	articles = read_csv_data(filename)
 	utils.loop_display_progress(articles, add_csv_article_to_db)
 
-@glc.new_connection(primary = True, pass_to_function = False)
+# @glc.new_connection(primary = True, pass_to_function = False)
 def main():
 	# add_source_data_to_db(read_json_data("data/bb_data.json"), "BreitBart")
 	# add_source_data_to_db(read_json_data("data/politico_data.json"), "Politico")
-	add_source_data_to_db(read_nytimes_data("data/nytimes"), "New York Times", "nytimes.com")
+	# add_source_data_to_db(read_nytimes_data("data/nytimes"), "New York Times", "nytimes.com")
+	# add_source_data_to_db(read_wsj_data("data/wsj"), "Wall Street Journal", "wsj.com")
 	# add_csv_data_to_db("data/fake.csv")
-	# bu.build_token_table()
+	bu.build_token_table()
 
 if __name__ == "__main__":
 	main()
