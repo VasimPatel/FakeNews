@@ -1,0 +1,1 @@
+"{\"content\": \"We are all Joe the Plumber in this anti-tax spot.\", \"article_id\": 4210, \"title\": \"McCain: 'Sweat Equity'\", \"source_id\": 1}"

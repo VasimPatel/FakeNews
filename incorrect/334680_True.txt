@@ -1,0 +1,1 @@
+"{\"article_id\": 334680, \"content\": \"A NBC affiliate in Chattanooga, Tennessee inadvertently published what appear to be election night results. The results are published in the typical format used by mainstream news networks and... \", \"title\": \"NBC Local News Accidentally Posts US Election Results a Week Early, Shows a Clinton \\u201cWin\\u201d\", \"source_id\": 20087}"

@@ -6,14 +6,18 @@
 
 from Utils import settings
 settings.init()
-
 import sys
+
 from importlib import import_module
 
 def main():
 	script = sys.argv[1:2][0].replace("/", ".").replace("\\", ".")
 	mod = import_module(script)
-	mod.main()
+	if len(sys.argv) > 4:
+		mod.main(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8], sys.argv[9])
+		#name_scheme, load_lda, load_bayes, load_svm, run_tests, num_articles, lda_only, bayes_only
+	else:
+		mod.main()
 
 if __name__ == "__main__":
 	main()

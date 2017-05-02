@@ -6,7 +6,7 @@ import sys
 
 
 def main():
-	file = open('classifiers/articles/may_day.txt', 'r')
+	file = open('classifiers/articles/sky.txt', 'r')
 
 	content = ''
 

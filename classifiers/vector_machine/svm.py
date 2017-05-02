@@ -35,7 +35,7 @@ class SVM:
 
 
 
-	def fit_clf(self):
+	def fit_clf(self, name=None):
 		if self.clf_set == 0:
 			print("Support Vector Machine is not set")
 			return
@@ -46,7 +46,7 @@ class SVM:
 		self.clf.fit(self.X_train, self.y_train)
 		#print("Best SVM Params: " + self.clf.best_params_)
 		self.clf_fit = 1
-		joblib.dump(self.clf, 'std_1.pkl')
+		joblib.dump(self.clf, 'loadAndsave/svm/' + name  + ".pkl")
 
 
 	def add_batch(self, head, target):

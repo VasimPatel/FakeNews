@@ -4,7 +4,7 @@ from nltk.stem.porter import PorterStemmer
 from gensim import corpora, models, similarities
 import gensim
 MODEL_DIR = "topic_modeling/models/"
-def lda(articles, num_t=10, nameScheme = "test", load=True):
+def lda(articles, num_t=10, name = "test", load=True):
 	if load != True:
 		tokenizer = RegexpTokenizer(r'\w+')
 
@@ -49,22 +49,22 @@ def lda(articles, num_t=10, nameScheme = "test", load=True):
 		ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=num_t, id2word = dictionary, alpha=2, passes=20)
 
 		#save dictionary corpus and ldamodel to be used later
-		dictionary.save(MODEL_DIR + nameScheme + "_dictionary.dict")
+		dictionary.save(MODEL_DIR + name + "_dictionary.dict")
 
-		corpora.MmCorpus.serialize(MODEL_DIR + nameScheme + '_corpus.mm', corpus)
+		corpora.MmCorpus.serialize(MODEL_DIR + name + '_corpus.mm', corpus)
 
-		ldamodel.save(MODEL_DIR + nameScheme + "_lda.lda")
+		ldamodel.save(MODEL_DIR + name + "_lda.lda")
 
 		#load saved docs for consistency and return
-		dictionary = corpora.Dictionary.load(MODEL_DIR + nameScheme + "_dictionary.dict")
+		dictionary = corpora.Dictionary.load(MODEL_DIR + name + "_dictionary.dict")
 
-		lda = models.LdaModel.load(MODEL_DIR + nameScheme + "_lda.lda")
+		lda = models.LdaModel.load(MODEL_DIR + name + "_lda.lda")
 
-		corpus = corpora.MmCorpus(MODEL_DIR + nameScheme + "_corpus.mm")
+		corpus = corpora.MmCorpus(MODEL_DIR + name + "_corpus.mm")
 	else:
-		lda = models.LdaModel.load(MODEL_DIR + nameScheme + "_lda.lda")
-		corpus = corpora.MmCorpus(MODEL_DIR + nameScheme + "_corpus.mm")
-		dictionary = corpora.Dictionary.load(MODEL_DIR + nameScheme + "_dictionary.dict")
+		lda = models.LdaModel.load(MODEL_DIR + name + "_lda.lda")
+		corpus = corpora.MmCorpus(MODEL_DIR + name + "_corpus.mm")
+		dictionary = corpora.Dictionary.load(MODEL_DIR + name + "_dictionary.dict")
 
 	return lda, dictionary, corpus
 
@@ -98,7 +98,7 @@ def cluster_articles(articles, lda, dictionary, corpus):
 	for article in articles:
 
 		#get topic distribution for an article
-		topic_dis, article_id = get_topic_distr(article, lda, dictionary, corpus)
+		topic_dis = get_topic_distr(article, lda, dictionary, corpus)
 
 		#get most likely topic assigned to article
 		max_distr = get_max_distr(topic_dis)
