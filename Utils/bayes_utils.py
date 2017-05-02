@@ -31,18 +31,24 @@ def tokenize_article(article):
 	# Return article tokens
 	return tokens
 
-def insert_article_tokens(article):
-	for token in tokenize_article(article):
-		if article["is_fake"] == True:
-			glc.execute_db_values_command("INSERT INTO tokens (token) VALUES (%s) ON CONFLICT (token) DO UPDATE SET real_count = tokens.real_count + 1", (token,))
-		elif article["is_fake"] == False:
-			glc.execute_db_values_command("INSERT INTO tokens (token) VALUES (%s) ON CONFLICT (token) DO UPDATE SET fake_count = tokens.fake_count + 1", (token,))
-		else:
-			glc.execute_db_values_command("INSERT INTO tokens (token) VALUES (%s) ON CONFLICT (token) DO UPDATE SET null_count = tokens.null_count + 1", (token,))
+def insert_article_tokens(article, cursor):
+	tokens = tokenize_article(article)
+	if article["is_fake"] == True:
+		cursor.executemany("""EXECUTE fake_token_insert (%s)""", tokens)
+		# glc.execute_db_values_command("INSERT INTO tokens (token) VALUES (%s) ON CONFLICT (token) DO UPDATE SET real_count = tokens.real_count + 1", (token,))
+	elif article["is_fake"] == False:
+		cursor.executemany("""EXECUTE real_token_insert (%s)""", tokens)
+		# glc.execute_db_values_command("INSERT INTO tokens (token) VALUES (%s) ON CONFLICT (token) DO UPDATE SET fake_count = tokens.fake_count + 1", (token,))
+	else:
+		cursor.executemany("""EXECUTE null_token_insert (%s)""", tokens)
+		# glc.execute_db_values_command("INSERT INTO tokens (token) VALUES (%s) ON CONFLICT (token) DO UPDATE SET null_count = tokens.null_count + 1", (token,))
 
 @glc.new_connection(primary = True, pass_to_function = True)
 def build_token_table(connection, cursor):
-	# glc.execute_db_command("""PREPARE token_insert AS INSERT INTO tokens (token) VALUES ($1) ON CONFLICT (token) DO UPDATE""")
+	glc.execute_db_command("""PREPARE real_token_insert AS INSERT INTO tokens (token) VALUES ($1) ON CONFLICT (token) DO UPDATE SET real_count = tokens.real_count + 1""")
+	glc.execute_db_command("""PREPARE fake_token_insert AS INSERT INTO tokens (token) VALUES ($1) ON CONFLICT (token) DO UPDATE SET fake_count = tokens.fake_count + 1""")
+	glc.execute_db_command("""PREPARE null_token_insert AS INSERT INTO tokens (token) VALUES ($1) ON CONFLICT (token) DO UPDATE SET null_count = tokens.null_count + 1""")
+
 
 	articles = []
 	if os.path.isfile("db_articles_local"):
@@ -58,7 +64,7 @@ def build_token_table(connection, cursor):
 				pickle.dump(articles, db_articles_local)
 
 	print("Tokenizing and populating tokens table...")
-	utils.loop_display_progress(articles, insert_article_tokens)
+	utils.loop_display_progress(articles, insert_article_tokens, cursor)
 
 	# tokens = []
 	# if os.path.isfile("tokens_backup"):
