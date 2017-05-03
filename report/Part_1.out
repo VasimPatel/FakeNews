@@ -1,0 +1,5 @@
+\BOOKMARK [2][-]{section*.7}{Satisfiability}{}% 1
+\BOOKMARK [2][-]{section*.8}{Hardness}{}% 2
+\BOOKMARK [3][-]{section*.10}{What hypotheses do these results suggest about the relationship between the clause to variable ratio and the percentage of SAT instances?}{section*.8}% 3
+\BOOKMARK [3][-]{section*.11}{What hypotheses do these results suggest about the relationship between the percentage of SAT instances and the average problem hardness?}{section*.8}% 4
+\BOOKMARK [3][-]{section*.12}{What hypotheses are suggested by the observed differences between the median and mean of the run times?}{section*.8}% 5

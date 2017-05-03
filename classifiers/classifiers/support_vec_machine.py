@@ -126,29 +126,46 @@ def main(name_scheme, load_lda, load_bayes, load_svm, run_tests, num_articles, n
 
 	if load_svm is 0:
 		#add articles to machine
-		query_fake = "SELECT * FROM articles where is_fake=True order by random() LIMIT {}".format(num_articles)
-		query_real = "SELECT * From articles where is_fake=False order by random() limit {}".format(round(num_articles/2))
-		query_bp = "SELECT * From articles where is_fake is NULL order by random() limit {}".format(round(num_articles/2))
+		query_fake = "SELECT * FROM articles where is_fake=True order by random() LIMIT {}".format(round(num_articles/2)+num_articles_test)
+		query_real = "SELECT * From articles where is_fake=False order by random() limit {}".format(round(num_articles/4)+num_articles_test/2)
+		query_bp = "SELECT * From articles where is_fake is NULL order by random() limit {}".format(round(num_articles/4)+num_articles_test/2)
 
-
+		sys.stdout.write(str(num_articles_test))
+		sys.stdout.write("\n"+str(num_articles))
 		#uncoment when not loading svm
-		fake_a = query(query_fake)
-		real_a = query(query_real)
-		brei_po_a= query(query_bp)
+		fake = query(query_fake)
+
+		fake_a = fake[:-num_articles_test]
+		test_fake_a = fake[round(num_articles/2):]
+
+
+		real = query(query_real)
+
+		real_a = real[:-round(num_articles_test/2)]
+		test_real_a = real[round(num_articles/4):]
+
+
+		brei= query(query_bp)
+
+		brei_a = brei[:-round(num_articles_test/2)]
+		test_brei_a = brei[round(num_articles/4):]
 	
 
 		articles = []
 		#uncomment when not loading svm
 
 		articles_fake = fake_a
-		articles_real = real_a + brei_po_a
+		articles_real = real_a + brei_a
 
 
 		#uncomment when not loading svm
 
 		articles=articles_fake + articles_real
+		test_articles = test_fake_a + test_real_a + test_brei_a
 
-
+		sys.stdout.write("Length of training articles: " + str(len(articles)))
+		sys.stdout.write("\nLength of testing articles: " + str(len(test_articles)))
+		sys.stdout.flush()
 		#shuffle articles for robustness
 		random.shuffle(articles)
 		#sys.stdout.write("done queries...\n")
@@ -208,6 +225,17 @@ def main(name_scheme, load_lda, load_bayes, load_svm, run_tests, num_articles, n
 		#comment when not loading
 		machine.train_svm(load=True, name=name_scheme)
 
+		query_fake = "SELECT * FROM articles where is_fake=True order by random() LIMIT {}".format(num_articles_test)
+		query_real = "SELECT * From articles where is_fake=False order by random() limit {}".format(num_articles_test/2)
+		query_bp = "SELECT * From articles where is_fake is NULL order by random() limit {}".format(num_articles_test/2)
+
+		f_a = query(query_fake)
+		r_a = query(query_real)
+		b_a = query(query_bp)
+
+		test_articles = f_a+r_a+b_a
+
+
 
 	#if load_svm is 0:
 	if load_svm is 5:
@@ -221,22 +249,21 @@ def main(name_scheme, load_lda, load_bayes, load_svm, run_tests, num_articles, n
 
 	if run_tests is 1:
 
-		result_file = open('results/results_' + str(lda_only) + str(bayes_only) + '.txt', 'a+')
-
-		test_articles = []
+		result_file = open('results/results_lot_' + str(lda_only) + str(bayes_only) + '.txt', 'a+')
+		#test_articles = []
 		#article_ids = [322192, 321344, 320032, 318316, 322931, 314573, 335192, 333674, 334393, 318466, 315706, 323739, 321762, 319347, 319315, 335922, 320252, 319549, 323124, 336352, 338524, 342748, 349622, 343091, 346231, 342262, 338204, 344140, 341987, 348641, 222508, 171236, 33373, 183205, 307319, 288772, 225597, 253192, 260425, 69703]
 
-		query_fake_t = "SELECT * FROM articles where is_fake=True order by random() LIMIT {}".format(num_articles_test)
-		query_real_t = "SELECT * From articles where is_fake=False order by random() limit {}".format(round(num_articles_test/2))
-		query_bp_t = "SELECT * From articles where is_fake is NULL order by random() limit {}".format(round(num_articles_test/2))
+		#query_fake_t = "SELECT * FROM articles where is_fake=True order by random() LIMIT {}".format(num_articles_test)
+		#query_real_t = "SELECT * From articles where is_fake=False order by random() limit {}".format(round(num_articles_test/2))
+		#query_bp_t = "SELECT * From articles where is_fake is NULL order by random() limit {}".format(round(num_articles_test/2))
 		#db_q = "SELECT * FROM articles where article_id = any(%s)"
 		#test_articles = query(db_q, (article_ids,))
-		t_f = query(query_fake_t)
-		t_r = query(query_real_t)
-		t_bp = query(query_bp_t)
-		test_articles = test_articles + t_f
-		test_articles = test_articles + t_r
-		test_articles = test_articles + t_bp
+		#t_f = query(query_fake_t)
+		#t_r = query(query_real_t)
+		#t_bp = query(query_bp_t)
+		#test_articles = test_articles + t_f
+		#test_articles = test_articles + t_r
+		#test_articles = test_articles + t_bp
 		total = 0
 		correct=0
 		total_f = 0
@@ -278,15 +305,15 @@ def main(name_scheme, load_lda, load_bayes, load_svm, run_tests, num_articles, n
 						correct_f += 1
 					if c == 0:
 						correct_r += 1
-				else:
-					try:
-						json_str = json.dumps({'source_id': each['source_id'], 'article_id': each['article_id'], 'title': each['title'], 'content': each['content']})
-						with open('incorrect/' + title, 'w') as f:
-							json.dump(json_str, f)
-							f.close()
-					except Exception as e:
-						print(e)
-						pass
+				#else:
+					#try:
+						#json_str = json.dumps({'source_id': each['source_id'], 'article_id': each['article_id'], 'title': each['title'], 'content': each['content']})
+						#with open('incorrect/' + title, 'w') as f:
+						#	json.dump(json_str, f)
+						#	f.close()
+					#except Exception as e:
+					#	print(e)
+					#	pass
 
 				if c == 1:
 					total_f += 1
