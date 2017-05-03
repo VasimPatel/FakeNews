@@ -1,1 +1,0 @@
-"{\"title\": \"Editors' Note\", \"content\": \"Last night, we removed an article about Bono at the request of the videographer who had provided the links to the videos upon which the article had been based.\", \"source_id\": 2, \"article_id\": 251595}"

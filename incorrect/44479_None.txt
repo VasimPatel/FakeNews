@@ -1,1 +1,0 @@
-"{\"article_id\": 44479, \"content\": \"Web search traffic has reached its highest point in a decade, according to Google Trends, while a\\u00a0LexisNexis search of major newspapers shows a 49-percent increase in articles about the country. Foreign Policy's John Hudson has the full details.\", \"title\": \"Web interest in North Korea skyrockets\", \"source_id\": 1}"

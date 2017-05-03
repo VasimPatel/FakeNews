@@ -1,1 +1,0 @@
-"{\"title\": \"Michelle Obama spotted at Shake Shack\", \"content\": \"(Photo Credit: Reuters)Spotted: First lady Michelle Obama at the Shake Shack in Dupont Circle on Monday afternoon. Known for its cheeseburgers and milkshakes, the fast food joint opened its Washington location in May.\", \"source_id\": 1, \"article_id\": 105365}"

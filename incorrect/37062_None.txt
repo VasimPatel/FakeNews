@@ -1,1 +1,0 @@
-"{\"title\": \"The news down in Raleigh\", \"content\": \"Without question one of the smartest things we've read on the web today. (h/t @abeaujon)\", \"source_id\": 1, \"article_id\": 37062}"

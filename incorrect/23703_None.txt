@@ -1,1 +1,0 @@
-"{\"title\": \"AUC: 'Golden Rule'\", \"content\": \"Americans United for Change, in its latest D.C. cable spot, sticks with the insurance horror stories.The ad from the labor-backed group is silent on the public option and the excise tax.\", \"source_id\": 1, \"article_id\": 23703}"

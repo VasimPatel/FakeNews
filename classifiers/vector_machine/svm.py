@@ -43,7 +43,8 @@ class SVM:
 		sys.stdout.write("fitting svm...")
 		sys.stdout.flush()
 
-		self.clf.fit(self.X_train, self.y_train)
+		#self.clf.fit(self.X_train, self.y_train)
+		self.clf.fit(self.data, self.targets)
 		#print("Best SVM Params: " + self.clf.best_params_)
 		self.clf_fit = 1
 		joblib.dump(self.clf, 'loadAndsave/svm/' + name  + ".pkl")

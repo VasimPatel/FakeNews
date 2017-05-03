@@ -1,1 +1,0 @@
-"{\"title\": \"Largest Pipeline in US Explodes, Kills and Injures Workers Trying to Make Repairs\", \"content\": \"By Whitney Webb A mistake during repairs to the Colonial pipeline, which ruptured in September, resulted in a massive explosion and started a wildfire, prompting Alabama\\u2019s governor to declare a... \", \"source_id\": 8046, \"article_id\": 322625}"

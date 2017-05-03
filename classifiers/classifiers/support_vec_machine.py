@@ -83,7 +83,7 @@ class SupportVectorMachine:
 				self.svm.clf_fit = 1
 				self.svm.clf_set = 1
 			else:
-				self.svm.split_data(test_size)
+				#self.svm.split_data(test_size)
 				self.svm.set_clf()
 				self.svm.fit_clf(name=name)
 		except Exception as e:
@@ -111,7 +111,7 @@ def query(query, variables = None):
 	return res
 
 
-def main(name_scheme, load_lda, load_bayes, load_svm, run_tests, num_articles, lda_only, bayes_only):
+def main(name_scheme, load_lda, load_bayes, load_svm, run_tests, num_articles, num_articles_test, lda_only, bayes_only):
 	#instantiate machine
 	machine = SupportVectorMachine()
 
@@ -120,6 +120,7 @@ def main(name_scheme, load_lda, load_bayes, load_svm, run_tests, num_articles, l
 	load_bayes = int(load_bayes)
 	run_tests = int(run_tests)
 	num_articles = int(num_articles)
+	num_articles_test = int(num_articles_test)
 	lda_only = int(lda_only)
 	bayes_only = int(bayes_only)
 
@@ -150,8 +151,8 @@ def main(name_scheme, load_lda, load_bayes, load_svm, run_tests, num_articles, l
 
 		#shuffle articles for robustness
 		random.shuffle(articles)
-		sys.stdout.write("done queries...\n")
-		sys.stdout.flush()
+		#sys.stdout.write("done queries...\n")
+		#sys.stdout.flush()
 
 		#set articles for machine to get features of
 		machine.set_articles(articles)
@@ -197,7 +198,7 @@ def main(name_scheme, load_lda, load_bayes, load_svm, run_tests, num_articles, l
 		sys.stdout.flush()
 
 		#uncomment when not loading svm
-		machine.train_svm(test_size=.25, load=False, name=name_scheme)
+		machine.train_svm(test_size=0, load=False, name=name_scheme)
 
 		sys.stdout.write("done training...")
 		sys.stdout.flush()
@@ -208,7 +209,8 @@ def main(name_scheme, load_lda, load_bayes, load_svm, run_tests, num_articles, l
 		machine.train_svm(load=True, name=name_scheme)
 
 
-	if load_svm is 0:
+	#if load_svm is 0:
+	if load_svm is 5:
 		#get prediction stats
 		#uncomment when not loading svm
 	
@@ -219,12 +221,14 @@ def main(name_scheme, load_lda, load_bayes, load_svm, run_tests, num_articles, l
 
 	if run_tests is 1:
 
+		result_file = open('results/results_' + str(lda_only) + str(bayes_only) + '.txt', 'a+')
+
 		test_articles = []
 		#article_ids = [322192, 321344, 320032, 318316, 322931, 314573, 335192, 333674, 334393, 318466, 315706, 323739, 321762, 319347, 319315, 335922, 320252, 319549, 323124, 336352, 338524, 342748, 349622, 343091, 346231, 342262, 338204, 344140, 341987, 348641, 222508, 171236, 33373, 183205, 307319, 288772, 225597, 253192, 260425, 69703]
 
-		query_fake_t = "SELECT * FROM articles where is_fake=True order by random() LIMIT {}".format(num_articles)
-		query_real_t = "SELECT * From articles where is_fake=False order by random() limit {}".format(round(num_articles/2))
-		query_bp_t = "SELECT * From articles where is_fake is NULL order by random() limit {}".format(round(num_articles/2))
+		query_fake_t = "SELECT * FROM articles where is_fake=True order by random() LIMIT {}".format(num_articles_test)
+		query_real_t = "SELECT * From articles where is_fake=False order by random() limit {}".format(round(num_articles_test/2))
+		query_bp_t = "SELECT * From articles where is_fake is NULL order by random() limit {}".format(round(num_articles_test/2))
 		#db_q = "SELECT * FROM articles where article_id = any(%s)"
 		#test_articles = query(db_q, (article_ids,))
 		t_f = query(query_fake_t)
@@ -247,7 +251,7 @@ def main(name_scheme, load_lda, load_bayes, load_svm, run_tests, num_articles, l
 
 		i = 0
 		t = len(test_articles)
-		#random.shuffle(test_articles)
+		random.shuffle(test_articles)
 		for each in test_articles:
 			aid = each['article_id']
 			ifk = each['is_fake']
@@ -266,6 +270,7 @@ def main(name_scheme, load_lda, load_bayes, load_svm, run_tests, num_articles, l
 					c = 1
 				else:
 					c = 0
+				#classif = a_f[0]
 				classif = machine.predict_svm([a_f])
 				if classif == c:
 					correct += 1
@@ -301,9 +306,15 @@ def main(name_scheme, load_lda, load_bayes, load_svm, run_tests, num_articles, l
 				sys.stdout.write("Done...Test: " + str(total) + "/" + str(len(test_articles)) + ".....total accuracy: "  + str(round(correct/total,2)) + ", Fake accuracy: " + str(f_acc) + ", Real accuracy: " + str(r_acc)+ "\r")
 				sys.stdout.flush()
 			except Exception as e:
-				print("Error!!: " + str(e))
+				#print("Error!!: " + str(e))
 				pass
 
-		print("\n\tTotal Accuracy: " +  str(correct) + "/" + str(total) +": " + str(correct/total))
-		print("\n\tFake Accuracy: " + str(correct_f) + "/" + str(total_f) + ": " + str(correct_f/total_f))
-		print("\n\tReal Accuracy: " + str(correct_r) + "/" + str(total_r) + ": " + str(correct_r/total_r))
+		#sys.stdout.write("Done...Test: " + str(total) + "/" + str(len(test_articles)) + ".....total accuracy: "  + str(round(correct/total,2)) + ", Fake accuracy: " + str(f_acc) + ", Real accuracy: " + str(r_acc)+ "\r")
+		sys.stdout.write(str(round(correct/total,2)) + ", " + str(f_acc) + ", " + str(r_acc)+ "\n")
+		sys.stdout.flush()
+
+		out_str = str(round(correct/total,2)) + ", " + str(f_acc) + ", " + str(r_acc)+ "\n"
+		result_file.write(out_str)
+		#print("\n\tTotal Accuracy: " +  str(correct) + "/" + str(total) +": " + str(correct/total))
+		#print("\n\tFake Accuracy: " + str(correct_f) + "/" + str(total_f) + ": " + str(correct_f/total_f))
+		#print("\n\tReal Accuracy: " + str(correct_r) + "/" + str(total_r) + ": " + str(correct_r/total_r))

@@ -1,1 +1,0 @@
-"{\"article_id\": 55800, \"title\": \"Presidential debates: The female factor\", \"content\": \"\\\"The candidates weren\\u2019t kind to Jim Lehrer in the first presidential debate. The veteran moderator was talked over, interrupted, cut off and ignored.\\\"The Washington Post's Paul Farhi asks:\\\"Would they dare to do the same thing to a woman?\\\"\", \"source_id\": 1}"

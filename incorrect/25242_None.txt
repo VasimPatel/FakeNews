@@ -1,1 +1,0 @@
-"{\"title\": \"Sioux Falls scarier than Central Park?\", \"source_id\": 1, \"content\": \"The Daily News piles on.Key metric -- \\\"Murders in 2008\\\"The Score: Sioux Falls, SD, 5; Central Park, 0.Glenn Thrush is senior staff writer at Politico Magazine.\", \"article_id\": 25242}"

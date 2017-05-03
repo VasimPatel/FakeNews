@@ -1,1 +1,0 @@
-"{\"title\": \"On Media: The Summer of Zimmerman\", \"content\": \"My colleague Patrick Gavin and I discuss media coverage of the Zimmerman trial, Glenn Greenwald's fight with the Washington Post, and the Koch brothers' plans for a possible Tribune takeover.\", \"source_id\": 1, \"article_id\": 39670}"

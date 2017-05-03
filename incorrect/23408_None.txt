@@ -1,1 +1,0 @@
-"{\"content\": \"The AARP will, the AP reports, back health care legislation -- a brand-name seal of approval unmatched for its influence on the key demographic of older Americans.\", \"source_id\": 1, \"article_id\": 23408, \"title\": \"Seal of approval\"}"
