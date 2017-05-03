@@ -249,7 +249,7 @@ def main(name_scheme, load_lda, load_bayes, load_svm, run_tests, num_articles, n
 
 	if run_tests is 1:
 
-		result_file = open('results/results_lot_' + str(lda_only) + str(bayes_only) + '.txt', 'a+')
+		result_file = open('results/results_bayes_' + str(lda_only) + str(bayes_only) + '.txt', 'a+')
 		#test_articles = []
 		#article_ids = [322192, 321344, 320032, 318316, 322931, 314573, 335192, 333674, 334393, 318466, 315706, 323739, 321762, 319347, 319315, 335922, 320252, 319549, 323124, 336352, 338524, 342748, 349622, 343091, 346231, 342262, 338204, 344140, 341987, 348641, 222508, 171236, 33373, 183205, 307319, 288772, 225597, 253192, 260425, 69703]
 
@@ -286,19 +286,19 @@ def main(name_scheme, load_lda, load_bayes, load_svm, run_tests, num_articles, n
 			title = str(aid) + '_' + str(ifk) + '.txt'
 			try:
 				#test_F.set_clusters(machine.articles, machine.lda, machine.dictionary, machine.corpus)
-				sys.stdout.write("getting features...")
-				sys.stdout.flush()
+				#sys.stdout.write("getting features...")
+				#sys.stdout.flush()
 				a_f = test_F.get_features(each, lda=machine.lda, dictionary=machine.dictionary, corpus=machine.corpus, class_dict= machine.real_fake_word_dict)
 				#print("Features: ")
 				#print(a_f)
-				sys.stdout.write("got features...")
-				sys.stdout.flush()
+				#sys.stdout.write("got features...")
+				#sys.stdout.flush()
 				if each['is_fake'] == True:
 					c = 1
 				else:
 					c = 0
-				#classif = a_f[0]
-				classif = machine.predict_svm([a_f])
+				classif = a_f[0]
+				#classif = machine.predict_svm([a_f])
 				if classif == c:
 					correct += 1
 					if c == 1:
@@ -330,8 +330,8 @@ def main(name_scheme, load_lda, load_bayes, load_svm, run_tests, num_articles, n
 					r_acc = 0
 
 				total += 1
-				sys.stdout.write("Done...Test: " + str(total) + "/" + str(len(test_articles)) + ".....total accuracy: "  + str(round(correct/total,2)) + ", Fake accuracy: " + str(f_acc) + ", Real accuracy: " + str(r_acc)+ "\r")
-				sys.stdout.flush()
+				#sys.stdout.write("Done...Test: " + str(total) + "/" + str(len(test_articles)) + ".....total accuracy: "  + str(round(correct/total,2)) + ", Fake accuracy: " + str(f_acc) + ", Real accuracy: " + str(r_acc)+ "\r")
+				#sys.stdout.flush()
 			except Exception as e:
 				#print("Error!!: " + str(e))
 				pass
