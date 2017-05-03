@@ -313,7 +313,7 @@ def main(name_scheme, load_lda, load_bayes, load_svm, run_tests, num_articles, n
 		sys.stdout.write(str(round(correct/total,2)) + ", " + str(f_acc) + ", " + str(r_acc)+ "\n")
 		sys.stdout.flush()
 
-		out_str = str(round(correct/total,2)) + ", " + str(f_acc) + ", " + str(r_acc)+ "\n"
+		out_str = str(num_articles) + ',' + str(round(correct/total,2)) + "," + str(f_acc) + "," + str(r_acc)+ "\n"
 		result_file.write(out_str)
 		#print("\n\tTotal Accuracy: " +  str(correct) + "/" + str(total) +": " + str(correct/total))
 		#print("\n\tFake Accuracy: " + str(correct_f) + "/" + str(total_f) + ": " + str(correct_f/total_f))
