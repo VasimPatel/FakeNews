@@ -215,7 +215,7 @@ def classify(dictionaries, article):
 				if dictionaries[source_id].get(token) != None:
 					sums[source_id] = sums[source_id] + dictionaries[source_id][token]
 				else:
-					sums[source_id] = sums[source_id] + 13
+					sums[source_id] = sums[source_id] + 15
 
 
 	# Return the source with the minimum sum of words. The article is classified as coming from this source.

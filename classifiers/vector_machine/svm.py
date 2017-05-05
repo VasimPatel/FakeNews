@@ -30,7 +30,7 @@ class SVM:
   			# {'C': [1, 10, 100, 1000], 'gamma': [0.001, 0.0001], 'kernel': ['rbf']},
  			# ]
 		# self.clf = GridSearchCV(svm.SVC(C=1), tuned_parameters, cv=5, n_jobs=10)
-		self.clf = svm.SVC()
+		self.clf = svm.SVC(kernel=kernel)
 		self.clf_set = 1
 
 
